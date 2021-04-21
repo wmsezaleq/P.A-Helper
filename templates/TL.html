@@ -263,7 +263,7 @@
                 <!-- SI MZ -->
                 {% for i in range(50) %}
                     {% set _top = namespace(value=top.value) %}
-                    <img class="icon_clickeable" calle ="{{i+1}}" id="icon_extra_{{i+1}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    <img class="icon_clickeable" sector="SI" calle ="{{i+1}}" id="icon_extra_{{i+1}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
                     {% for j in range(5) %}
                         {% if i+1 <= 10 %}
                             {% set sector = "CPG" %}
@@ -285,7 +285,7 @@
                 {% set top = namespace(value=816/4) %}
                 
                     {% set _top = namespace(value=top.value) %}
-                    <img class="icon_clickeable" calle ="{{49 + (55-i)}}" sector = "MZ" id="icon_extra_{{49 + (55-i)}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    <img class="icon_clickeable" calle ="{{49 + (55-i)}}" sector = "SI" id="icon_extra_{{49 + (55-i)}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
                     {% for j in range(20) %}
                         <canvas id="SI_MZ_{{49 + (55-i)}}_{{j}}" tipo="SI" width="22.75" height="22.75" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
                         {% set _top.value = _top.value + 25.75%}
@@ -314,7 +314,7 @@
                 {% set top = namespace(value=815/4) %}
                 
                     {% set _top = namespace(value=top.value) %}
-                    <img class="icon_clickeable" calle ="{{90 + i}}" id="icon_extra_{{90 + i}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    <img class="icon_clickeable" sector="SI" calle ="{{90 + i}}" id="icon_extra_{{90 + i}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
                     {% for j in range(20) %}
                         <canvas id="SI_RK_{{90 + i}}_{{j}}" tipo="SI" width="{{93/4}}" height="{{93/4}}" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}}; "></canvas>
                         {% set _top.value = _top.value + 25.75 %}

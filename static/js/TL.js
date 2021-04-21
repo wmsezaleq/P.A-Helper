@@ -458,11 +458,16 @@ $(function(){
                                 .mouseout(function(){
                                     $("#info-calle").css("display","none");
                                 });
-                            i++;
                             break;
                         }
                     case "WT":
                         var dir = "";
+                        if (i > 4)
+                        {
+                            $("#icon_extra_WT_" + parseInt(key.substring(5,8))).show()
+                            total_MZ++;
+                            continue;
+                        }
                         if (calle < 11)
                         {
                                                         
@@ -523,8 +528,10 @@ $(function(){
                                 $("#info-calle").css("display","none");
                             });
                         break;
-
+                    
                 }
+                i++;
+
             }
         }
         $("#total_pallets_MZ").text("Total pallets en MZ: " + total_MZ);
@@ -547,7 +554,7 @@ $(function(){
         
         for (key in SI)
         {
-            if (key.substring(0,2) == "SI" && parseInt(key.substring(5,8)) == parseInt($(this).attr('calle')))
+            if (key.substring(0,2) == $(this).attr('sector') && parseInt(key.substring(5,8)) == parseInt($(this).attr('calle')))
             {
                 if (key == last_open)
                 {
@@ -640,6 +647,7 @@ $(function(){
                                     "left" : parseInt($(this).css('left') + 40),
                                     "display" : "block"
                                 })
+
 
         $("canvas[tipo='SI']").each(function(index){
             if($(this).attr('data-content') == undefined)

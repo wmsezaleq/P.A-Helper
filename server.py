@@ -394,7 +394,6 @@ def buscarLugar(sec, piso, calle, *args):
         total_modulo = 62
         if "SI" not in sector:
             x = threading.Thread(target=contador, daemon=True, args=(sector,))
-            print("Iniciando hilo")
             x.start()
             hilos[sector] = x
             cache[sector] = []
