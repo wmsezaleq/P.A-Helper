@@ -426,7 +426,21 @@ $(function(){
                             canvas.attr("data-content", ISs);
                             canvas.attr("horas", date_to_string(date));
                             canvas.attr("color", color);
+                            try
+                            {
+                                var ctx = document.getElementById(dir).getContext('2d');
+                                ctx.font = "10px Arial";
+                                ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
+                                var number = date.getHours();
 
+                                if (number < 10)
+                                    number = "0" + number;
+                                ctx.fillText(number, 5, 15);                                     
+                            }
+                            catch{
+                                console.log("ERROR con pos: " + dir);
+
+                            }
                             canvas.click(function(event)
                             {
                                 $("#calle-num").text($(this).attr("data-title"));
@@ -477,6 +491,22 @@ $(function(){
                         canvas.attr("data-content", ISs);
                         canvas.attr("horas", date_to_string(date));
                         canvas.attr("color", color);
+                        try
+                        {
+                            var ctx = document.getElementById(dir).getContext('2d');
+                            ctx.font = "10px Arial";
+                            ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
+                            var number = date.getHours();
+                            if (number < 10)
+                                number = "0" + number;
+                            ctx.fillText(number, 5, 15);                                
+
+
+                        }
+                        catch{
+                            console.log("ERROR con pos: " + dir);
+                            
+                        }
                         canvas.click(function(event)
                         {
                             $("#calle-num").text($(this).attr("data-title"));
@@ -566,6 +596,22 @@ $(function(){
                     canvas.attr("data-content", ISs);
                     canvas.attr("horas", date_to_string(date));
                     canvas.attr("color", color);
+                    try
+                    {
+                        var ctx = document.getElementById(dir).getContext('2d');
+                        ctx.font = "10px Arial";
+                        ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
+
+                        var number = date.getHours();
+                        if (number < 10)
+                            number = "0" + number;
+                        ctx.fillText(number, 5, 15);                                
+
+
+                    }
+                    catch{
+                        console.log("ERROR con pos: " + dir);
+                    }
                     canvas.click(function(event)
                     {
                         $("#calle-num").text($(this).attr("data-title"));
