@@ -1,0 +1,349 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="{{url_for('static',filename='css/MLSearcher.css')}}">
+        <link rel="stylesheet" href="{{url_for('static',filename='css/TL.css')}}">
+        <link rel="shortcut icon" href="https://http2.mlstatic.com/ui/navigation/5.6.0/mercadolibre/favicon.ico">
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js"></script>
+        <script type="text/javascript" src="{{url_for('static',filename='js/rainbowvis.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static',filename='js/TL.js')}}"></script>
+        <script type="text/javascript" src="{{url_for('static',filename='js/html2canvas.js')}}"></script>
+
+    </head>
+    <body>
+        <header role="banner" class="nav-header" style="margin: auto; margin-bottom: 10px; align-items: center; text-align:center; ">
+            <a href="javascript:init()"><img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.12.1/mercadolibre/logo__small.png" 
+            height=30px class="ML_logo" style="margin: 8px; height: 5%; " alt="MercadoLibre"></a>
+            <button id="update_everything">Actualizar todo</button>
+        </header>
+
+        <!-- Momento 0 -->
+        <div id = "inicio">
+            <button id="RK_SEL" class="giant">RK</button><br>
+            <button id="MZ_SEL" class="giant">MZ</button><br>
+            <button id="SI_SEL" class="giant">SI</button><br>
+        </div>
+
+        <label id="message"></label>
+        <!-- Mapa de calor del piso para MZ-->
+        <div id="MZ" style="display: inline-block">
+            <label>Piso </label>
+            <select id="floor_select">
+                <option disabled selected value></option>
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+            </select>
+            <br>
+            <label>Tipo de mapa</label>
+            <select id="type_heatmap">
+                <option value="VOLUMEN">Volumen</option>
+                <option value="MELI">MELI</option>
+            </select> <br>  
+            <button id="update_floor">Actualizar piso</button> <br>
+            <br>
+            <div id="MZ_FULL">
+                <map name = "MAPMZ_FULL">
+                    {% set bottomLeft = namespace(value=13/2.8) %}
+                    {% set topRight = namespace(value=130/2.8) %}
+    
+                    {% for i in range(27) %}
+                        <area shape="rect" num="{{27-i}}" id="FULL_{{27-i}}"  style="cursor:help;" coords="{{bottomLeft.value}}, {{2541/2.8}}, {{topRight.value}}, {{2400/2.8}}" alt="Calle N°{{i+1}}">
+                        {% if i % 2 == 0 %}
+                            {% set bottomLeft.value = bottomLeft.value + 132/2.8 %}
+                            {% set topRight.value = topRight.value + 132/2.8 %}
+                        {% else %}
+                            {% set bottomLeft.value = bottomLeft.value + 128/2.8 %}
+                            {% set topRight.value = topRight.value + 128/2.8 %}
+                        {% endif %}
+                    {% endfor %}
+                </map>
+                <div id="MZ_FULL_BOX"  style="position: relative;display: inline-block;">
+                    <img src="{{url_for('static', filename='img/MZ_FULL_0.png')}}" id="MZ_FULL_0_IMG" width="{{3554/2.8}}" height="{{2586/2.8}}" usemap="#MAPMZ_FULL">
+                    <img src="{{url_for('static', filename='img/MZ_FULL.png')}}" id="MZ_FULL_IMG" width ="{{3554/2.8}}" height="{{2586/2.8}}" usemap="#MAPMZ_FULL">
+                    <!-- Origen de la izquierda para cada iteración, arranca en 37 -->
+                    {% set left = namespace(value=37/2.8) %}
+                    <!-- Por cada calle (1 a 27) -->
+                    {% for x in range(27) %}
+                        {% set suma = namespace(value=53/2.8) %}
+                        {% set top = namespace(value=34/2.8) %}
+    
+                        {% for i in range(86) %}
+                            {% if 86-i == 80/2.8 %}
+                                {% set top.value = top.value-2/2.8 %}
+                            {% elif 86-i == 78/2.8 %}
+                                {% set top.value = top.value + 2/2.8 %}
+                            {% elif 86-i == 66/2.8 %}
+                                {% set top.value = top.value + 4/2.8 %}
+                            {% elif 86-i == 62/2.8 %}
+                                {% set top.value = top.value - 4/2.8 %}
+                            {% elif 86-i == 46/2.8 %}
+                                {% set top.value = top.value + 4/2.8 %}
+
+                            
+                            {% endif %}
+                        
+
+                            {% if i % 2 == 0 %}
+                                <canvas id="full_{{27-x}}_{{86 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                            {% else %}
+                                {% set num = left.value + 50/2.8 %}
+                                <canvas id="full_{{27-x}}_{{86 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set top.value = top.value+suma.value %}
+    
+                                <!-- Corregir altura -->
+                                {% if suma.value < 55/2.8 %}
+                                    {% set suma.value = suma.value+1/2.8 %}
+                                {% else %}
+                                    {% set suma.value = suma.value-4/2.8 %}
+                                {% endif %}
+                                <!--  -->
+                            {% endif %}
+    
+                            <!-- Pasar de calle por la avenida -->
+                            {% if i == 23 %}
+                                {% set top.value = top.value + 58/2.8 %}
+    
+                            {% elif i == 65 %}
+                                {% set top.value = top.value + 67/2.8 %}
+                            {% endif %}
+                            <!--  -->
+                        {% endfor %}
+                            {% set left.value = left.value + 130/2.8 %}
+                    {% endfor %}
+                </div>
+                
+
+            </div> 
+            <div id="MZ_PART">
+                        <map name = "MAPMZ_PART">
+                    {% set bottomLeft = namespace(value=13/2.8) %}
+                    {% set topRight = namespace(value=130/2.8) %}
+    
+                    {% for i in range(27) %}
+                        <area shape="rect" num = "{{27-i}}"id="PART_{{27-i}}" style="cursor:help;" coords="{{bottomLeft.value}}, 1839/2.8, {{topRight.value}}, 1700/2.8" alt="Calle N°{{i+1}}">
+                        {% if i % 2 == 0 %}
+                            {% set bottomLeft.value = bottomLeft.value + 132/2.8 %}
+                            {% set topRight.value = topRight.value + 132/2.8 %}
+                        {% else %}
+                            {% set bottomLeft.value = bottomLeft.value + 128/2.8 %}
+                            {% set topRight.value = topRight.value + 128/2.8 %}
+                        {% endif %}
+                    {% endfor %}
+                </map>
+                <div id="MZ_PART_BOX" style="position: relative;display: inline-block;">
+                    <img src="{{url_for('static', filename='img/MZ_PART.png')}}" id="MZ_PART_IMG" width ="{{3540/2.8}}" height="{{1881/2.8}}"usemap="#MAPMZ_PART">
+                    <!-- Origen de la izquierda para cada iteración, arranca en 37 -->
+                    {% set left = namespace(value=22/2.8) %}
+                    <!-- Por cada calle (1 a 27) -->
+                    {% for x in range(27) %}
+                        {% set suma = namespace(value=54/2.8) %}
+                        {% set top = namespace(value=25/2.8) %}
+    
+                        {% for i in range(62) %}
+
+                            {% if 62 - i == 56 %}
+                                {% set top.value = top.value - 3/2.8 %}
+                            {% elif 62 - i == 54 %}
+                                {% set top.value = top.value + 3/2.8 %}
+                            {% endif %}
+                            {% if i % 2 == 0 %}
+                                <canvas id="part_{{27-x}}_{{62 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                            {% else %}
+                                {% set num = left.value + 50/2.8 %}
+                                <canvas id="part_{{27   -x}}_{{62 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set top.value = top.value+suma.value %}
+    
+                                <!-- Corregir altura -->
+                                {% if suma.value < 55/2.8 %}
+                                    {% set suma.value = suma.value+1/2.8 %}
+                                {% else %}
+                                    {% set suma.value = suma.value-4/2.8 %}
+                                {% endif %}
+                                <!--  -->
+                            {% endif %}
+    
+                            <!-- Pasar de calle por la avenida -->
+                            {% if i == 41 %}
+                                {% set top.value = top.value + 68/2.8 %}
+                            {% endif %}
+                            <!--  -->
+                            {% endfor %}
+                            {% set left.value = left.value + 130/2.8 %}
+                            {% endfor %}
+                </div>
+                
+            </div>
+            <button id="update">Actualizar</button>
+
+
+        </div>
+
+        <div id="RK" class="RK_MAP" style="display: inline-block">
+            <label>Nivel</label>
+            <select id="nivel">
+                {% for i in range(5) %}
+                <option>{{i+2}}</option>
+                {% endfor %}
+            </select><br>
+            <button id="update_level">Actualizar RK</button> <br>
+
+            <map name = "RK_MAP">
+                {% set bottomLeft = namespace(value=75+45) %}
+                    {% set topRight = namespace(value=75+84) %}
+    
+                    {% for i in range(16) %}
+                        <area shape="rect" num = "{{i+2}}"id="RK_{{i+2}}"  style="cursor:help;" coords="{{bottomLeft.value}}, 3096, {{topRight.value}}, 3050" alt="Calle N°{{i+1}}">
+                        {% set bottomLeft.value = bottomLeft.value + 75 %}
+                        {% set topRight.value = topRight.value + 75 %}
+
+                    {% endfor %}
+            </map>
+            <br>
+            <div id="RK_BOX" style="position: relative; display: inline-block">
+                <img src="{{url_for('static', filename='img/RK.png')}}" usemap="#RK_MAP"><br>
+                {% set left = namespace(value=113) %}
+                {% set _left = namespace(value=left) %}
+                {% for x in range(16) %}
+                        {% set top = namespace(value=55) %}
+                        {% set _top = namespace(value=top) %}
+
+                        {% for i in range(104) %}
+                            {% if 104-i < 103  and (104-i) % 2 == 0%}
+                            {% set top.value = top.value + 56 %}
+                            {%endif%}
+
+                            {% if 104-i == 70 or 104-i == 36%}
+                            {% set top.value = top.value + 48 %}
+                            {%endif%}
+                            {% for t in range(2) %}
+                                {% if t % 2 == 0%}
+                                    {% set _top.value = top.value %}
+                                {% else %}
+                                    {% set _top.value = top.value + 20  %}
+                         
+                                    
+                                {%endif%}
+                                {% if (104-i) % 2 == 0%}
+                                    {% set _left.value = left.value %}
+
+                                {% else %}
+                                    {% set _left.value = left.value + 42%}
+                                {% endif %}
+                                    <canvas class="clickeable" calle="{{x+2}}" modulo={{104-i}} posicion={{2-t}} id="RK_{{x+2}}_{{104 - i}}_{{2- t}}" width="14" height="15" style="cursor: help; position:absolute; left: {{_left.value}}; top: {{_top.value}};"></canvas>
+                            {% endfor %}
+                            <!--  -->
+                        {% endfor %}
+                        {% set left.value = left.value + 75 %}
+                    {% endfor %}
+                <button id="update_rk">Actualizar</button>
+
+            </div>
+        </div>
+
+        <div id="SI" style="display: inline-block; position:relative; box-sizing: border-box ;">
+            <br>
+            <input type="search" id="IS_search" placeholder="N° de IS o pallet" style="margin-bottom: 60px"><br>
+            <button id="update_SI">Forzar actualización de Stage In</button>
+            <div style="position: absolute; left: 80px; top: 30px; font-size: 12px;">
+                Mayor a 48 horas: <canvas style="background-color: #FF1B00; width: 8; height: 8"></canvas> <br>
+                Entre 24 y 48 horas: <canvas style="background-color: #FF8B00; width: 8; height: 8"></canvas> <br>
+                Entre 12 y 24 horas: <canvas style="background-color: #FFF300; width: 8; height: 8"></canvas> <br>
+                Menor a 12 horas: <canvas style="background-color: #00FF16; width: 8; height: 8"></canvas> <br>
+            </div>
+            <div id="SI_BOX" style="position: relative; display: inline-block">
+                <img src="{{url_for('static', filename='img/SI.png')}}" width="1270" height="778"><br>
+                <!-- #region jinja -->
+
+                {% set left = namespace(value=9)%}
+                {% set top = namespace(value=54/4 + 1) %}
+                
+                <!-- SI MZ -->
+                {% for i in range(50) %}
+                    {% set _top = namespace(value=top.value) %}
+                    <img class="icon_clickeable" calle ="{{i+1}}" id="icon_extra_{{i+1}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    {% for j in range(5) %}
+                        {% if i+1 <= 10 %}
+                            {% set sector = "CPG" %}
+                        {% elif i+1 >= 90 %}
+                            {% set sector = "RK" %}
+                        {% else %} 
+                            {% set sector = "MZ" %}
+                        {% endif %}
+                        <canvas id="SI_{{sector}}_{{i+1}}_{{j}}" tipo="SI" width="22.75" height="22.75" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
+                        {% set _top.value = (_top.value + 25) %}
+                    {% endfor %}
+                    {% set left.value = (left.value + 25) %}
+                {% endfor %}
+
+                <!-- SI Pulmon Extra MZ -->
+                {% set left = namespace(value=9)%}
+                {% for i in range(50, 54) %}
+
+                {% set top = namespace(value=816/4) %}
+                
+                    {% set _top = namespace(value=top.value) %}
+                    <img class="icon_clickeable" calle ="{{49 + (55-i)}}" sector = "MZ" id="icon_extra_{{49 + (55-i)}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    {% for j in range(20) %}
+                        <canvas id="SI_MZ_{{49 + (55-i)}}_{{j}}" tipo="SI" width="22.75" height="22.75" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
+                        {% set _top.value = _top.value + 25.75%}
+                    {% endfor %}
+                    {% set left.value = left.value + 26  %}
+                {% endfor %}
+                <!-- WT MZ -->
+                {% set left = namespace(value=309/4)%}
+                
+                {% set _top = namespace(value=628/4) %}
+                {% for i in range(28) %}
+                    <img class="icon_clickeable" calle ="{{i+1}}" id="icon_extra_WT_{{i+1}}" sector="WT" src="{{url_for('static', filename='img/alert.png')}}" style='width:15px; cursor: pointer; display: none; position:absolute; left: {{left.value+5}}; top:{{_top.value-20}}; background-color: transparent'>
+                    {% if i+1 <= 10 %}
+                        {% set sector = "CPG" %}
+                    {% else %}
+                        {% set sector = "MZ" %} 
+                    {% endif %}
+                    <canvas id="WT_{{sector}}_{{i+1}}" tipo="SI" calle="{{i+1}}" width="22.75" height="22.75" style="position:absolute; left:{{left.value}}; top:{{_top.value}}"></canvas>
+                    {% set left.value = left.value + 150/4 %}
+                {% endfor %}
+
+                <!-- RK -->
+                {% set left = namespace(value=1131)%}
+                {% for i in range(5) %}
+
+                {% set top = namespace(value=815/4) %}
+                
+                    {% set _top = namespace(value=top.value) %}
+                    <img class="icon_clickeable" calle ="{{90 + i}}" id="icon_extra_{{90 + i}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    {% for j in range(20) %}
+                        <canvas id="SI_RK_{{90 + i}}_{{j}}" tipo="SI" width="{{93/4}}" height="{{93/4}}" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}}; "></canvas>
+                        {% set _top.value = _top.value + 25.75 %}
+                    {% endfor %}
+                    {% set left.value = left.value + 26  %}
+                {% endfor %}
+                <div id="extra_pallet" style="position:absolute;background-color: #ebebeb; border-color:  white; border-style: solid; border-width: 2px; display:none; content-box; top:0; left:0">
+                    {% for i in range(40)%}
+                        <canvas id="SI_EXTRA_{{i}}"  tipo="SI" width="22.75" height="22.75" cantidad="0" style="padding-top: 10px; padding-left: 10px; padding-right: 10px; background-clip: content-box; display: block;"></canvas>
+                    {% endfor %}
+                </div>
+                <!-- #endregion -->
+                <label id="total_pallets_MZ" style="position: absolute; left: 500; top:400; background-color:#c23b22; color: white;">Total pallets en MZ: </label>
+                <label id="total_pallets_RK" style="position: absolute; left: 500; top:480; background-color:#c23b22; color: white;">Total pallets en RK:</label>
+
+            </div>
+        </div>
+        <div id="info-calle" class="box">
+            <label id="calle-num" style="font-weight: bold; text-align:center;">Calle </label> <br>
+            <label id="calle-disponible">Disponible: </label><br>
+            <label id="calle-ocupado">Ocupado: </label><br>
+            <label id="porcentaje-disponible">% disponibilidad: </label>
+        </div>
+        <div id="info-modulo" class="box">
+            <label id="calle-num_" style="font-weight: bold; text-align:center;">  </label> <br>
+            <label id="calle-modulo"> </label><br>
+            <label id="calle-posicion"> </label><br>
+        </div>
+        <div id="piechart" style="width: 100%; height: 100%;"></div>
+
+    </body>
+</html>

@@ -1,0 +1,97 @@
+#info-calle{
+    display: none;
+    background: #C8C8C8;
+    margin-left: 28px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1000;
+    width:auto;
+    height:auto;
+    border-radius: 5px;
+    text-align: left;
+
+}
+
+.found{
+    background-color: #000000;
+}
+
+body {
+    font-family: "Proxima Nova", "Helvetica Neue", Helvetica, "Roboto", Arial, sans-serif;
+    background-color: #ebebeb;
+    text-align: center;
+    justify-content: center;
+}
+.RK_MAP label{
+    font-size: 30px;
+}
+.RK_MAP select{
+    font-size: 25px;
+}
+
+area:hover #info-calle{
+    display: block;
+}
+
+.clickeable:hover #info-modulo{
+    display: block;
+}
+
+#update_everything
+{
+    font-size: 20px;
+}
+select{
+    font-size: 20px;
+    
+}
+
+
+.box label{
+    font-size: 20px;
+}
+
+
+
+button{
+    font-size: 40px;
+    width: auto;
+    padding: 1%;
+    border-radius: 15px;
+}
+
+label{
+    font-size: 20px;
+}
+
+.giant{
+    width: 200;
+    height: 100px;
+    margin-top: 50px;
+    font-size: 40px;
+    padding: 0px;
+
+    border-radius: 0px;
+
+}
+
+
+  
+#info-modulo{
+    display: none;
+    background: #C8C8C8;
+    margin-left: 28px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1000;
+    width:200px;
+    height:auto;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 10px;
+    box-sizing: border-box;
+}
+
+#info-modulo label{
+    font-size: 10px;
+}

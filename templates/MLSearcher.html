@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PS Auto Search</title>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/MLSearcher.css')}}">
+    <link rel="shortcut icon" href="https://http2.mlstatic.com/ui/navigation/5.6.0/mercadolibre/favicon.ico">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js"></script>
+    <script src="{{url_for('static',filename='js/app.js')}}"></script>
+
+    <!-- <script src="../static/js/app.js"></script> -->
+    <!-- <link rel ="stylesheet" href="../static/css/MLSearcher.css"> -->
+</head>
+
+<body>
+    <header role="banner" class="nav-header">
+            <label style="cursor : pointer;"onclick="openNav()">&#9776;</label>
+            <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.12.1/mercadolibre/logo__small.png" 
+            height=30px style="margin: 5px" alt="MercadoLibre">
+    </header>
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a id ="modo">Vista en Honeywell</a>
+        <a id ="sort_asc">Ordenar posiciones</a>
+        <a id="filtrar">Filtrar</a>
+    </div>
+    <div class="main">
+        <h1  style="padding-top : 20px;"><span id ="main">Ingrese el piso y calle para iniciar la busqueda</span></h1>
+        <p>
+            <label> Sector
+                <select id="sector">
+                    <option value="MZ">MZ</option>
+                    <option value="RK">RK</option>
+                </select>
+            </label>
+            <label id="lpiso">Piso
+                <select id = "piso">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select> 
+            </label>
+            <label id="lcalle">Calle
+                <select id="calle">
+                    {% for x in range(25) %}
+                    <option value="{{x+1}}">{{x+1}}</option>
+                    {% endfor %}
+                </select> 
+            </label> 
+            <br>
+            <button id="pedir_data">Buscar</button>
+        </p>
+        <label id="msg" style="vertical-align: center;"></label><br>
+        <div id="reportes" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h1><span id="modaltitle"></span></h1>
+                <button id="report_qr">Reportar QR roto</button> <br>
+                <button id="report_problem">Reportar error<br>(conteo erróneo)</button><br>
+            </div>
+        </div>
+        <div id="filtrado_modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <select id="tipo_filtrado">
+                    <option>Ninguno</option>
+                    <option>Cantidad de MELIs</option>
+                    <option>Altura</option>
+                </select> <br>
+                <div id="filtrado_melis">
+                    <select id="type_melis">
+                        <option>Menor a</option>
+                        <option>Mayor a</option>
+                    </select>
+                    <input id="numero_melis" min="0" max="3" type="number">
+                </div>
+                <div id="filtrado_altura">
+                    <label>Altura</label>
+                    <input id="numero_altura" min="1" max="6" type="number">
+                </div> 
+                <br>
+                <button id="accept_filter">Confirmar filtro</button>
+
+            </div>
+        </div>
+        <div id="modalOk" class="modal">
+            <div class="modal-content">
+                <h1>¿Está seguro que desea reportar esta posicion a inventario?</h1>
+                <button id="ok">Si, continuar</button> 
+                <button id="cancel">Cancelar</button><br>
+            </div>
+        </div>
+        <table id="tabla">
+            <tr>
+            <th>Posicion</th>
+            <th>Cantidad de MELIs registrados</th>
+            <th>% libre</th>
+            </tr>
+        </table>
+        <div id="picker">
+        <label id="picker_calle" class="picker"></label>
+        <label id="picker_meli" class="picker"></label> <br>
+        <button id="leftArrow" class="arrow">←</button>
+        <button id="rightArrow" class="arrow">→</button> <br>
+        <button id="report">Reportar</button>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
