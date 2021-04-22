@@ -246,12 +246,14 @@
         <div id="SI" style="display: inline-block; position:relative; box-sizing: border-box ;">
             <br>
             <input type="search" id="IS_search" placeholder="N° de IS o pallet" style="margin-bottom: 60px"><br>
-            <button id="update_SI">Forzar actualización de Stage In</button>
+            <button id="update_SI">Actualizar Stage In</button>
             <div style="position: absolute; left: 80px; top: 30px; font-size: 12px;">
                 Mayor a 48 horas: <canvas style="background-color: #FF1B00; width: 8; height: 8"></canvas> <br>
                 Entre 24 y 48 horas: <canvas style="background-color: #FF8B00; width: 8; height: 8"></canvas> <br>
                 Entre 12 y 24 horas: <canvas style="background-color: #FFF300; width: 8; height: 8"></canvas> <br>
                 Menor a 12 horas: <canvas style="background-color: #00FF16; width: 8; height: 8"></canvas> <br>
+                <label style="background-color:#e834eb; font-size: 10px; color:white;">Ctrl+C</label>: Copiar IS<br>
+                <label style="background-color: #e834eb; font-size: 10px; color:white;">Ctrl+X</label>: Copiar N° de pallet<br>
             </div>
             <div id="SI_BOX" style="position: relative; display: inline-block">
                 <img src="{{url_for('static', filename='img/SI.png')}}" width="1270" height="778"><br>
@@ -272,7 +274,7 @@
                         {% else %} 
                             {% set sector = "MZ" %}
                         {% endif %}
-                        <canvas id="SI_{{sector}}_{{i+1}}_{{j}}" tipo="SI" width="22.75" height="22.75" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
+                        <canvas id="SI_{{sector}}_{{i+1}}_{{j}}" tipo="SI" width="22.75" height="22.75" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
                         {% set _top.value = (_top.value + 25) %}
                     {% endfor %}
                     {% set left.value = (left.value + 25) %}
@@ -287,7 +289,7 @@
                     {% set _top = namespace(value=top.value) %}
                     <img class="icon_clickeable" calle ="{{49 + (55-i)}}" sector = "SI" id="icon_extra_{{49 + (55-i)}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
                     {% for j in range(20) %}
-                        <canvas id="SI_MZ_{{49 + (55-i)}}_{{j}}" tipo="SI" width="22.75" height="22.75" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
+                        <canvas id="SI_MZ_{{49 + (55-i)}}_{{j}}" tipo="SI" width="22.75" height="22.75" style="position:absolute; left:{{left.value}}; top:{{_top.value}};"></canvas>
                         {% set _top.value = _top.value + 25.75%}
                     {% endfor %}
                     {% set left.value = left.value + 26  %}
@@ -298,12 +300,7 @@
                 {% set _top = namespace(value=628/4) %}
                 {% for i in range(28) %}
                     <img class="icon_clickeable" calle ="{{i+1}}" id="icon_extra_WT_{{i+1}}" sector="WT" src="{{url_for('static', filename='img/alert.png')}}" style='width:15px; cursor: pointer; display: none; position:absolute; left: {{left.value+5}}; top:{{_top.value-20}}; background-color: transparent'>
-                    {% if i+1 <= 10 %}
-                        {% set sector = "CPG" %}
-                    {% else %}
-                        {% set sector = "MZ" %} 
-                    {% endif %}
-                    <canvas id="WT_{{sector}}_{{i+1}}" tipo="SI" calle="{{i+1}}" width="22.75" height="22.75" style="position:absolute; left:{{left.value}}; top:{{_top.value}}"></canvas>
+                    <canvas id="WT_{{i+1}}" tipo="SI" calle="{{i+1}}" width="22.75" height="22.75" style="position:absolute; left:{{left.value}}; top:{{_top.value}}"></canvas>
                     {% set left.value = left.value + 150/4 %}
                 {% endfor %}
 
@@ -314,18 +311,44 @@
                 {% set top = namespace(value=815/4) %}
                 
                     {% set _top = namespace(value=top.value) %}
-                    <img class="icon_clickeable" sector="SI" calle ="{{90 + i}}" id="icon_extra_{{90 + i}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
+                    <img class="icon_clickeable" sector="DK" calle ="{{90 + i}}" id="icon_extra_DK_{{90 + i}}" src="{{url_for('static', filename='img/alert.png')}}" style='width:20px; cursor: pointer; display: none; position:absolute; left: {{left.value}}; top:{{top.value-30}}; background-color: transparent'>
                     {% for j in range(20) %}
-                        <canvas id="SI_RK_{{90 + i}}_{{j}}" tipo="SI" width="{{93/4}}" height="{{93/4}}" cantidad="0" style="position:absolute; left:{{left.value}}; top:{{_top.value}}; "></canvas>
+                        <canvas id="SI_RK_{{90 + i}}_{{j}}" tipo="SI" width="{{93/4}}" height="{{93/4}}" style="position:absolute; left:{{left.value}}; top:{{_top.value}}; "></canvas>
                         {% set _top.value = _top.value + 25.75 %}
                     {% endfor %}
                     {% set left.value = left.value + 26  %}
                 {% endfor %}
+                <!--- DK -->
+                {% set left = namespace(value=1764/4) %}
+                {% set top = namespace(value=2775/4) %}
+                {% for i in range(11) %}
+                    <canvas id="DK_{{38 + i}}" tipo="SI" width="{{90/4}}" height="{{90/4}}" style="position:absolute; left:{{left.value}}; top:{{top.value}};"></canvas>
+                    {% set left.value = left.value + 100/4  %}
+                {% endfor %}
+
+                {% for i in range(5) %}
+                    <canvas id="DK_{{57 + i}}" tipo="SI" width="{{90/4}}" height="{{90/4}}" style="position:absolute; left:{{left.value}}; top:{{top.value}};"></canvas>
+                    {% set left.value = left.value + 100/4  %}
+                {% endfor %}
+
+                {% set top = namespace(value=2790/4) %}
+                {% set left = namespace(value=1768/4) %}
+
+                {% for i in range(16) %}
+                    {% if i <= 10 %}
+                        <img class="icon_clickeable" calle ="{{38+1}}" id="icon_extra_DK_{{38+i}}" sector="DK" src="{{url_for('static', filename='img/alert.png')}}" style='width:10px; cursor: pointer; display: none; position:absolute; left: {{left.value+5}}; top:{{top.value-20}}; background-color: transparent'>
+                    {% else %}
+                        <img class="icon_clickeable" calle ="{{46+i}}" id="icon_extra_DK_{{46+i}}" sector="DK" src="{{url_for('static', filename='img/alert.png')}}" style='width:10px; cursor: pointer; display: none; position:absolute; left: {{left.value+5}}; top:{{top.value-20}}; background-color: transparent'>
+                    {% endif %}
+                    {% set left.value = left.value + 100.3/4 %}
+                {% endfor %}
+
                 <div id="extra_pallet" style="position:absolute;background-color: #ebebeb; border-color:  white; border-style: solid; border-width: 2px; display:none; content-box; top:0; left:0">
                     {% for i in range(40)%}
-                        <canvas id="SI_EXTRA_{{i}}"  tipo="SI" width="22.75" height="22.75" cantidad="0" style="padding-top: 10px; padding-left: 10px; padding-right: 10px; background-clip: content-box; display: block;"></canvas>
+                        <canvas id="SI_EXTRA_{{i}}"  tipo="SI" width="22.75" height="22.75" style="padding-top: 10px; padding-left: 10px; padding-right: 10px; background-clip: content-box; display: block;"></canvas>
                     {% endfor %}
                 </div>
+
                 <!-- #endregion -->
                 <label id="total_pallets_MZ" style="position: absolute; left: 500; top:400; background-color:#c23b22; color: white;">Total pallets en MZ: </label>
                 <label id="total_pallets_RK" style="position: absolute; left: 500; top:480; background-color:#c23b22; color: white;">Total pallets en RK:</label>
@@ -333,17 +356,17 @@
             </div>
         </div>
         <div id="info-calle" class="box">
-            <label id="calle-num" style="font-weight: bold; text-align:center;">Calle </label> <br>
-            <label id="calle-disponible">Disponible: </label><br>
-            <label id="calle-ocupado">Ocupado: </label><br>
-            <label id="porcentaje-disponible">% disponibilidad: </label>
+            <label id="calle-num" style="font-weight: bold; text-align:center; display: block;">Calle </label>
+            <label id="calle-disponible" style="display: block;">Disponible: </label>
+            <label id="calle-ocupado" style="display: block;">Ocupado: </label>
+            <label id="porcentaje-disponible" style="display: block;">% disponibilidad: </label>
         </div>
         <div id="info-modulo" class="box">
-            <label id="calle-num_" style="font-weight: bold; text-align:center;">  </label> <br>
-            <label id="calle-modulo"> </label><br>
-            <label id="calle-posicion"> </label><br>
+            <label id="calle-num_" style="font-weight: bold; text-align:center; display: block;">  </label>
+            <label id="calle-modulo" style="display: block;"> </label>
+            <label id="calle-posicion" style="display: block;"> </label>
         </div>
         <div id="piechart" style="width: 100%; height: 100%;"></div>
-
+        <input style="display: none;" type="text" id="buffer_copy">
     </body>
 </html>

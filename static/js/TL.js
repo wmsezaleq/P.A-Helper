@@ -236,6 +236,33 @@ $(function(){
     rainbow.setSpectrum("#FF6347", "#ADFF2F");
     // MZ = returnMZ();
     // RK = returnRK();
+    var CtrlDown = false, ctrlKey = 17, cKey = 67, xKey = 88;
+    $(document).keydown(function(e)
+    {
+        if (e.keyCode == ctrlKey)
+            CtrlDown = true;
+        else
+        {
+            var buffer_copy = $("#buffer_copy");
+            buffer_copy.show();
+            if (CtrlDown && e.keyCode == cKey)
+                buffer_copy.attr('value', $("#calle-ocupado").text().substring(6));
+            else if (CtrlDown && e.keyCode == xKey)
+                buffer_copy.attr('value', $("#calle-num").text());
+            else
+                return;
+            buffer_copy.select();
+            document.execCommand("copy");
+            buffer_copy.hide();
+        }
+    })
+                .keyup(function(e)
+    {
+        if (e.keyCode == ctrlKey)
+            CtrlDown = false;   
+    });
+
+
     socketio.emit('TL-data', '');
     socketio.on('TL-data', function(msg){
         all_pos = msg[0];
@@ -251,8 +278,7 @@ $(function(){
     });
 
     $("#update_SI").click(function(){
-        socketio.emit('pedir',["SI", 0, 0]);
-        alert("Actualizando... Por favor espere");
+        socketio.emit('pedir',["SI", -1, 0]);
     });
 
     $("#update_floor").click(function()
@@ -333,6 +359,9 @@ $(function(){
     }
     socketio.on('TL-SI', function(msg)
     {
+        $("canvas[tipo='SI']").each(function(){
+            $(this).css('background-color', "transparent");
+        });
         var today = new Date();
         for (const direccion in msg)
         {
@@ -373,6 +402,57 @@ $(function(){
                 var pallet_dir = msg[key][pallet][1];
                 var ISs = msg[key][pallet][0];
                 var calle = parseInt(key.substring(5,8));
+                function makeIT(direccion)
+                {
+                    var hours = Math.abs(today - date) / 3.6e6;
+                    var color = "";
+                    if (hours > 48)
+                        color = "#FF1B00";
+                    else if (hours < 48 && hours > 24)
+                        color = "#FF8B00";
+                    else if (hours < 24 && hours > 12)
+                        color = "#FFF300";
+                    else
+                        color = "#00FF16";
+                    canvas = $("#" + direccion);
+                    canvas.css('background-color', color);
+                    canvas.attr("data-title", pallet_dir);
+                    canvas.attr("data-content", ISs);
+                    canvas.attr("horas", date_to_string(date));
+                    canvas.attr("color", color);
+                    try
+                    {
+                        var ctx = document.getElementById(direccion).getContext('2d');
+                        ctx.font = "10px Arial";
+                        ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
+                        var number = date.getHours();
+
+                        if (number < 10)
+                            number = "0" + number;
+                        ctx.fillText(number, 5, 15);                                     
+                    }
+                    catch{
+                        console.log("ERROR con pos: " + direccion);
+
+                    }
+                    canvas.click(function(event)
+                    {
+                        $("#calle-num").text($(this).attr("data-title"));
+                        $("#calle-ocupado").text("IS's: " + $(this).attr("data-content"));
+                        $("#porcentaje-disponible").text("Fecha de llegada: " + $(this).attr("horas"));
+                        var sz_div = parseInt($("#SI_BOX").css('width'));
+                        var sz_box = parseInt($("#info-calle").css('width'));
+                        $("#info-calle").css({"left" : (sz_div - event.pageX > sz_box-30 ? event.pageX : (event.pageX - sz_box*1.2)),
+                                    "top" : event.pageY,
+                                "display" : "block"});
+
+                        $("#calle-disponible").hide();
+                        
+                    })
+                        .mouseout(function(){
+                            $("#info-calle").css("display","none");
+                        });
+                }
                 switch(key.substring(0,2))
                 {
                     case "SI":
@@ -380,7 +460,7 @@ $(function(){
                             var dir = "";
                             if ((i > 4 && (calle >= 11 && calle <= 50)) || i > 20 && (calle > 50))
                             {
-                                $("#icon_extra_" + parseInt(key.substring(5,8))).show()
+                                $("#icon_extra_" + calle).show()
                                 if (calle >= 11 && calle <= 50)
                                     total_MZ++;
                                 else
@@ -389,146 +469,60 @@ $(function(){
                             }
                             else if (calle < 11)
                             {
-                                dir = "SI_CPG_" + parseInt(key.substring(5, 8)) + "_" + (4-i);
+                                dir = "SI_CPG_" + calle + "_" + (4-i);
                                 total_MZ++;
                             }    
                             else if (calle >= 11 && calle <= 50)
                             {
-                                dir = "SI_MZ_" + parseInt(key.substring(5, 8)) + "_" + (4-i);
+                                dir = "SI_MZ_" + calle + "_" + (4-i);
                                 total_MZ++;
                             }
                             else if (calle >= 51 && calle <= 54)
                             {
-                                dir = "SI_MZ_" + parseInt(key.substring(5, 8)) + "_" + (20-i);
+                                dir = "SI_MZ_" + calle + "_" + (20+(i-20));
                                 total_MZ++;
                             }
 
                             else if (calle >= 90 && calle <= 94)
                             {
-                                dir = "SI_RK_" + parseInt(key.substring(5,8)) + "_" + (20-i);
+                                dir = "SI_RK_" + calle + "_" + (20+(i-20));
                                 total_RK++;
                             }
-
-                            var hours = Math.abs(today - date) / 3.6e6;
-
-                            var color = "";
-                            if (hours > 48)
-                                color = "#FF1B00";
-                            else if (hours < 48 && hours > 24)
-                                color = "#FF8B00";
-                            else if (hours < 24 && hours > 12)
-                                color = "#FFF300";
-                            else
-                                color = "#00FF16";
-                            canvas = $("#" + dir);
-                            canvas.css('background-color', color);
-                            canvas.attr("data-title", pallet_dir);
-                            canvas.attr("data-content", ISs);
-                            canvas.attr("horas", date_to_string(date));
-                            canvas.attr("color", color);
-                            try
-                            {
-                                var ctx = document.getElementById(dir).getContext('2d');
-                                ctx.font = "10px Arial";
-                                ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
-                                var number = date.getHours();
-
-                                if (number < 10)
-                                    number = "0" + number;
-                                ctx.fillText(number, 5, 15);                                     
-                            }
-                            catch{
-                                console.log("ERROR con pos: " + dir);
-
-                            }
-                            canvas.click(function(event)
-                            {
-                                $("#calle-num").text($(this).attr("data-title"));
-                                $("#calle-ocupado").text("IS's: " + $(this).attr("data-content"));
-                                $("#porcentaje-disponible").text("Fecha de llegada: " + $(this).attr("horas"));
-                                var sz_div = parseInt($("#SI_BOX").css('width'));
-                                var sz_box = parseInt($("#info-calle").css('width'));
-                                $("#info-calle").css({"left" : (sz_div - event.pageX > sz_box-30 ? event.pageX : (event.pageX - sz_box*1.2)),
-                                            "top" : event.pageY,
-                                        "display" : "block"});
-
-                                $("#calle-disponible").hide();
-                                
-                            })
-                                .mouseout(function(){
-                                    $("#info-calle").css("display","none");
-                                });
+                            makeIT(dir);
                             break;
                         }
                     case "WT":
-                        var dir = "";
-                        if (i > 4)
                         {
-                            $("#icon_extra_WT_" + parseInt(key.substring(5,8))).show()
+                            var dir = "";
+                            if (i > 1)
+                            {
+                                $("#icon_extra_WT_" + calle).show()
+                                total_MZ++;
+                                continue;
+                            }
+                            
                             total_MZ++;
-                            continue;
+                            makeIT("WT_" + calle);
+                            break;
                         }
-                        if (calle < 11)
+                    case "DK":
                         {
-                                                        
-                            dir = "WT_CPG_" + parseInt(key.substring(5, 8));
+                            var dir = "";
+                            if (i > 1)
+                            {
+                                $("#icon_extra_DK"+ calle).show();
+                                if (calle < 57)
+                                    total_MZ++;
+                                else
+                                    total_RK++;
+                                continue;
+                            }
+                            if (calle < 57)
+                                total_MZ++;
+                            else
+                                total_RK++;
+                            makeIT("DK_" + calle);
                         }
-                        else
-                        {
-                            
-                            dir = "WT_MZ_" + parseInt(key.substring(5, 8));
-                        }
-                        total_MZ++;
-                        var hours = Math.abs(today - date) / 3.6e6;
-
-                        var color = "";
-                        if (hours > 48)
-                            color = "#FF1B00";
-                        else if (hours < 48 && hours > 24)
-                            color = "#FF8B00";
-                        else if (hours < 24 && hours > 12)
-                            color = "#FFF300";
-                        else
-                            color = "#00FF16";
-                        canvas = $("#" + dir);
-                        canvas.css('background-color', color);
-                        canvas.attr("data-title", pallet_dir);
-                        canvas.attr("data-content", ISs);
-                        canvas.attr("horas", date_to_string(date));
-                        canvas.attr("color", color);
-                        try
-                        {
-                            var ctx = document.getElementById(dir).getContext('2d');
-                            ctx.font = "10px Arial";
-                            ctx.clearRect(0, 0, canvas.attr('width'), canvas.attr('height'));
-                            var number = date.getHours();
-                            if (number < 10)
-                                number = "0" + number;
-                            ctx.fillText(number, 5, 15);                                
-
-
-                        }
-                        catch{
-                            console.log("ERROR con pos: " + dir);
-                            
-                        }
-                        canvas.click(function(event)
-                        {
-                            $("#calle-num").text($(this).attr("data-title"));
-                            $("#calle-ocupado").text("IS's: " + $(this).attr("data-content"));
-                            $("#porcentaje-disponible").text("Fecha de llegada: " + $(this).attr("horas"));
-                            $("#info-calle").css({"left" : event.pageX,
-                                                "top" : event.pageY,
-                                            "display" : "block"});
-
-                        $("#calle-disponible").hide();
-                            
-                        })
-                            .mouseout(function(){
-                                $("#info-calle").css("display","none");
-                            });
-                        break;
-                    
                 }
                 i++;
 
@@ -567,7 +561,11 @@ $(function(){
                 var i = 5;
                 SI[key].forEach(function(pallet, index)
                 {
-                    if (index < 5)
+                    sector = key.substring(0, 2);
+                    calle = parseInt(key.substring(5, 8));
+                    if ((sector == "SI" && index < 5) 
+                        || ((sector == "WT" || sector == "DK") && index < 1) 
+                        || ((sector == "SI" && ((calle <= 54 && calle >= 51) || (calle >= 90 && calle <= 94))) && index < 20))
                         return;
                     var today = new Date();
                     var date = 0;

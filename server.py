@@ -392,11 +392,11 @@ def buscarLugar(sec, piso, calle, *args):
         
         
         total_modulo = 62
-        if "SI" not in sector:
+        if "SI" not in sector and int(piso) != -1:
             x = threading.Thread(target=contador, daemon=True, args=(sector,))
             x.start()
             hilos[sector] = x
-            cache[sector] = []
+        cache[sector] = []
         if llego:
             cliente = args[0]
             cliente_actuales[sector] = cliente
@@ -519,66 +519,40 @@ def buscarLugar(sec, piso, calle, *args):
             if sector in hilos and hilos[sector].is_alive():
                 socketio.emit("TL-SI", cache[sector])
             else:
-                x = threading.Thread(target=contador, daemon=True, args=(sector,))
-                x.start()
-                hilos[sector] = x
+                if int(piso) != -1:
+                    x = threading.Thread(target=contador, daemon=True, args=(sector,))
+                    x.start()
+                    hilos[sector] = x
                 SI_DATA = {}
-                threads = []
-                dire = []
-                def search(page):
+                data_text = StringIO(requests.get(f"https://wms.mercadolibre.com.ar/api/download/stage-in", cookies=jar).text)
+                data = list(csv.reader(data_text, delimiter=','))
+                del data[0]
+                for arr in data:
                     try:
-                        soup = BeautifulSoup(requests.get(f"https://wms.mercadolibre.com.ar/reports/stage-in?page={page}", cookies=jar).text, features="lxml")
-                        li_list = soup.find_all("li", {"class" : "andes-pagination__button"})
-                        if len(li_list) > 0:
-                            del li_list[len(li_list)-1]
-                            del li_list[0]
-                            for li in li_list:
-                                try:
-                                    if int(li.text) > page:
-                                        x = threading.Thread(target=search, args=(int(li.text),))
-                                        index = len(threads)
-                                        threads.append(x)
-                                        threads[index].start()
-                                        break
-                                except:
+                        pallet = arr[0]
+                        direccion = arr[1]
+                        if len(direccion) == 0:
                                     continue
-                        tbody = soup.find("tbody")
-                        try:
-                            tr_list = tbody.find_all('tr')
-                            for tr in tr_list:
-                                pallet = tr.find("td", {"data-title" : "pallet_id"}).text
-                                direccion = tr.find("td",{"data-title" : "address_id"}).text
-                                if len(direccion) == 0:
-                                    continue
-                                dire.append([direccion, pallet])
-                                inbound = tr.find("td", {"data-title" : "inbounds"}).text
-                                fecha = tr.find("td", {"data-title" : "received_at"}).text
-                                if fecha != '-':
-                                    fecha = fecha[:6] + "." + fecha[6:]
-                                    if direccion not in SI_DATA:
-                                        SI_DATA[direccion] = [[inbound, pallet, datetime.strptime(fecha, "%d/%b/%Y %H:%M").strftime("%d/%m/%Y %H:%M")]]
-                                    else:
-                                        SI_DATA[direccion].append([inbound, pallet, datetime.strptime(fecha, "%d/%b/%Y %H:%M").strftime("%d/%m/%Y %H:%M")])
-
-                                else:
-                                    if direccion not in SI_DATA:
-                                        SI_DATA[direccion] = [[inbound, pallet, fecha]]
-                                    else:
-                                        SI_DATA[direccion].append([inbound, pallet, fecha])
-                        except:
-                            pass
+                        inbound = arr[2]
+                        usuario = arr[3]
+                        fecha = arr[4]
+                        if direccion not in SI_DATA:
+                            SI_DATA[direccion] = {}
+                            SI_DATA[direccion][pallet] = [inbound, fecha, usuario]
+                        elif pallet in SI_DATA[direccion]:
+                            SI_DATA[direccion][pallet][0] += ", " + inbound
+                        else:
+                            SI_DATA[direccion][pallet] = [inbound, fecha, usuario]
+                        
                     except:
-                        print(f"Exception: {traceback.format_exc()} ---- Pagina N°{page}")
-                                
-                search(1)
-                for thread in threads:
-                    thread.join()
-                # 80 
+                        print(f"Exception: {traceback.format_exc()}")
+                newdata = {}
+                for dire in SI_DATA:
+                    newdata[dire] = []
+                    for pallet in SI_DATA[dire]:
+                        newdata[dire].append([SI_DATA[dire][pallet][0], pallet, SI_DATA[dire][pallet][1], SI_DATA[dire][pallet][2]])
+                SI_DATA = newdata
                 cache[sector] = SI_DATA
-
-                with open("data.json","w") as file:
-                    file.write(str(dire))
-                
                 print("Enviado data SI...")
                 socketio.emit("TL-SI", SI_DATA)
 
@@ -872,7 +846,7 @@ if __name__ == '__main__':
         ip = str()
         port = int()
 
-        buscador()
+        # buscador()
         # form = mainForm()
         # form.start()
         
@@ -901,7 +875,7 @@ if __name__ == '__main__':
         y.start()
         x = threading.Thread(target=query, daemon=True)
         x.start()
-        socketio.run(app, host=ip, port=port, debug=False)
+        socketio.run(app, host=ip, port=port, debug=True)
     except Exception as e:
         print("Hubo un error hosteando el servidor... Traceroute: ")
         print(e)
