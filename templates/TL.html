@@ -77,25 +77,10 @@
                     {% set left = namespace(value=5) %}
                     <!-- Por cada calle (1 a 27) -->
                     {% for x in range(27) %}
-                        {% set suma = namespace(value=53/2.8) %}
-                        {% set top = namespace(value=34/2.8) %}
+                        {% set suma = namespace(value=98/5) %}
+                        {% set top = namespace(value=8) %}
     
                         {% for i in range(86) %}
-                            {% if 86-i == 80/2.8 %}
-                                {% set top.value = top.value-2/2.8 %}
-                            {% elif 86-i == 78/2.8 %}
-                                {% set top.value = top.value + 2/2.8 %}
-                            {% elif 86-i == 66/2.8 %}
-                                {% set top.value = top.value + 4/2.8 %}
-                            {% elif 86-i == 62/2.8 %}
-                                {% set top.value = top.value - 4/2.8 %}
-                            {% elif 86-i == 46/2.8 %}
-                                {% set top.value = top.value + 4/2.8 %}
-
-                            
-                            {% endif %}
-                        
-
                             {% if i % 2 == 0 %}
                                 <canvas id="full_{{27-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
                             {% else %}
@@ -103,25 +88,15 @@
                                 <canvas id="full_{{27-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
                                 {% set top.value = top.value+suma.value %}
     
-                                <!-- Corregir altura -->
-                                {% if suma.value < 55/2.8 %}
-                                    {% set suma.value = suma.value+1/2.8 %}
-                                {% else %}
-                                    {% set suma.value = suma.value-4/2.8 %}
-                                {% endif %}
-                                <!--  -->
                             {% endif %}
     
                             <!-- Pasar de calle por la avenida -->
-                            {% if i == 23 %}
-                                {% set top.value = top.value + 58/2.8 %}
-    
-                            {% elif i == 65 %}
-                                {% set top.value = top.value + 67/2.8 %}
+                            {% if i == 23 or i == 65 %}
+                                {% set top.value = top.value + 17.5 %}
                             {% endif %}
                             <!--  -->
                         {% endfor %}
-                            {% set left.value = left.value + 130/2.8 %}
+                            {% set left.value = left.value + 220.5/5 %}
                     {% endfor %}
                 </div>                
             </div>

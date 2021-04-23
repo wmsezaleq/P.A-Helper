@@ -801,8 +801,8 @@ $(function(){
         }
     });
     $("#floor_select").change(function(){
-        var MZ_FULL = 0;
-        var MZ_PART = 0;
+        var MZ_FULL = $("#MZ_FULL");
+        var MZ_PART = $("#MZ_PART");
         var seleccion = $(this).children("option:selected").val();
         if (this.value == 0 || this.value == 1)
         {
@@ -812,14 +812,9 @@ $(function(){
                 {
                     $("#MZ_FULL_0_IMG").show();
                     $("#MZ_FULL_IMG").hide();
-                    MZ_FULL = $("#MZ_FULL");
-                    MZ_PART = $("#MZ_PART");
-
                 }
                 else
                 {
-                    MZ_FULL = $("#MZ2_FULL");
-                    MZ_PART = $("#MZ2_PART");
                 }
             }
             else
@@ -828,13 +823,9 @@ $(function(){
                 {
                     $("#MZ_FULL_0_IMG").hide();
                     $("#MZ_FULL_IMG").show();
-                    MZ_FULL = $("#MZ_FULL");
-                    MZ_PART = $("#MZ_PART");
                 }
                 else
                 {
-                    MZ_FULL = $("#MZ2_FULL");
-                    MZ_PART = $("#MZ2_PART");
                 }
             }
             MZ_FULL.show();
