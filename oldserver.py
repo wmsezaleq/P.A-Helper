@@ -12,6 +12,7 @@ import requests
 import csv
 from random import random, randint
 from datetime import datetime
+from SQL_Manager import SQL_Manager
 import traceback
 
 #33-34
@@ -19,7 +20,7 @@ import traceback
 # 41-42
 
 # 50-51
-
+DB = SQL_Manager("DB")
 app = Flask(__name__)
 socketio = SocketIO(app)
 cookies = {}
@@ -631,10 +632,12 @@ def buscarLugar(sec, piso, calle, *args):
             pass
         else:
             foo()
-    data = {}
+
+        
     with open("data","r") as file:
         data = eval(file.read())
     with open("data","w") as file:
+
         data["pos"] = Metrica.pos
         data["MELIS"] = MELIS
         file.write(str(data))
