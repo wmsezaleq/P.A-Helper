@@ -1,6 +1,7 @@
 var all_pos = [];
 var MZ = [];
 var RK = [];
+var MZ2 = [];
 var SI = [];
 var rainbow = new Rainbow();
 function update_all(sec)
@@ -17,7 +18,7 @@ function update_all(sec)
         rainbow.setSpectrum("#71FF09", "#FF3C00");
     }
         
-    
+    // 
     if (tipo < 2)
         for (var calle=1; calle <= 27; calle++)
         {
@@ -170,7 +171,6 @@ function RK_func(){
     update_all("RK-0" + $("#nivel").children("option:selected").val());
     // Lleva la scrollbar arriba de todo
     $("#piechart").show();
-    update_all("RK-02");
     
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0; 
@@ -269,6 +269,7 @@ $(function(){
         sortAllPos();
         MZ = msg[1];
         RK = msg[2];
+        MZ2 = msg[3];
 
     });
     $("#update_level").click(function()
@@ -301,6 +302,8 @@ $(function(){
         all_pos[msg[0]] = [msg[1], msg[2]];
         MZ = msg[3];
         RK = msg[4];
+        MZ2 = msg[5];
+        // Si el sector-piso concuerda con el sector + piso seleccionado... (MZ)
         if (msg[0].substring(0, 4) == "MZ-" + $("#floor_select").children("option:selected").val())
         {
             var contador = 0;
@@ -308,20 +311,30 @@ $(function(){
             var type = $("#type_heatmap").children("option:selected").val() == "VOLUMEN";
             var sec = $("#floor_select").children("option:selected").val();
             tipo = 0;
+            // sec significa piso
+            // si el piso es entre 0 y 1 entonces el tipo es 0
             if (sec == "0" || sec == "1")
             tipo = 0;
+            // si el piso es entre 1 y 2 entonces el tipo es 1
             else if (sec == "2" || sec == "3")
             tipo = 1;
+            else
+                tipo = 2
             
             if (tipo < 2)
             {
                 for (key in all_pos)
                 {
+                    // Si el modulo es igual al modulo de la dirección recibida...
                     if (key.substring(9, 12) == msg[0].substring(9, 12))
                     {
+                        // Si el tipo de mapa es de VOLUMEN
                         if (type)
+                            // Se suma el total en el 0 (volumen)
                             total += all_pos[key][0];
-                        else
+                        else // Sino
+                            // Se suma el total en el 1 (cant. meli)
+                            
                             total += all_pos[key][1]
                         contador++;
                     }
@@ -329,25 +342,43 @@ $(function(){
                 color = rainbow.colourAt(total/contador);
                 var calle = parseInt(key.substring(5, 8));
                 var modulo = parseInt(key.substring(9, 12));
-    
+                var dir = "";
+                // Si el tipo es 0 (piso 0 o 1)
                 if (!tipo)
-                    $("#full_" + calle + "_" + modulo).css({"background" : "#" + color, "opacity" : "0.8"});
-                else if (tipo)
-                    $("#part_" + calle + "_" + modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+                {
+                    // Es el mapa completo (86)
+                    if (calle < 27) // Si la calle es menor a 27, es del mezzanine 1
+                        dir = "#full_";
+                    else
+                        dir = "#full2_";
+                    $(dir + calle + "_" + modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+
                 }
-
+                // Si el tipo es 1 (piso 1 o 2)
+                // Es el mapa chico (62)
+                else if (tipo)
+                {   
+                    if (calle < 27)
+                        dir = "#part_";
+                    else
+                        dir = "#part_"
+                    $(dir + calle + "_" + modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+                }
             }
-            else if (msg[0].substring(0, 3) + msg[0].substring(13, 15) == "RK-0" + $("#nivel").children("option:selected").val())
-            {
-                var calle = parseInt(msg[0].substring(5, 8));
-                var modulo = parseInt(msg[0].substring(9, 12));
-                var posicion = parseInt(msg[0].substring(16, 18));
-                rainbow.setNumberRange(0, 1);   
-                rainbow.setSpectrum("#71FF09", "#FF3C00");
 
-                $("#RK_" + calle + "_" + modulo + "_" + posicion).css({"background" : "#" + rainbow.colourAt(msg[2]), "opacity" : "0.8"});
+        }
+        // Si la direccion recibida donde el sector- + nivel concuerda con RK-0 + nivel seleccionado....
+        else if (msg[0].substring(0, 3) + msg[0].substring(13, 15) == "RK-0" + $("#nivel").children("option:selected").val())
+        {
+            var calle = parseInt(msg[0].substring(5, 8));
+            var modulo = parseInt(msg[0].substring(9, 12));
+            var posicion = parseInt(msg[0].substring(16, 18));
+            rainbow.setNumberRange(0, 1);   
+            rainbow.setSpectrum("#71FF09", "#FF3C00");
 
-            }
+            $("#RK_" + calle + "_" + modulo + "_" + posicion).css({"background" : "#" + rainbow.colourAt(msg[2]), "opacity" : "0.8"});
+
+        }
     });
     function leading_zero(num)
     {
@@ -757,21 +788,54 @@ $(function(){
     $("#nivel").change(function(){
         update_all("RK-0" + $(this).children("option:selected").val());
     });
+    $("#MZ_select").change(function(){
+        if ($(this).children("option:selected").val() == "MZ1")
+        {
+            $("#MZ_FULL").show();
+            $("#MZ2_FULL").hide();
+        }
+        else
+        {
+            $("#MZ2_FULL").show(); 
+            $("#MZ_FULL").hide();
+        }
+    });
     $("#floor_select").change(function(){
-        var MZ_FULL = $("#MZ_FULL");
-        var MZ_PART = $("#MZ_PART");
+        var MZ_FULL = 0;
+        var MZ_PART = 0;
         var seleccion = $(this).children("option:selected").val();
         if (this.value == 0 || this.value == 1)
         {
             if (this.value == 0)
             {
-                $("#MZ_FULL_0_IMG").show();
-                $("#MZ_FULL_IMG").hide();
+                if ($("#MZ_SELECT").value == 0) // MZ1
+                {
+                    $("#MZ_FULL_0_IMG").show();
+                    $("#MZ_FULL_IMG").hide();
+                    MZ_FULL = $("#MZ_FULL");
+                    MZ_PART = $("#MZ_PART");
+
+                }
+                else
+                {
+                    MZ_FULL = $("#MZ2_FULL");
+                    MZ_PART = $("#MZ2_PART");
+                }
             }
             else
             {
-                $("#MZ_FULL_0_IMG").hide();
-                $("#MZ_FULL_IMG").show();
+                if ($("#MZ_SELECT").value == 0) // MZ1
+                {
+                    $("#MZ_FULL_0_IMG").hide();
+                    $("#MZ_FULL_IMG").show();
+                    MZ_FULL = $("#MZ_FULL");
+                    MZ_PART = $("#MZ_PART");
+                }
+                else
+                {
+                    MZ_FULL = $("#MZ2_FULL");
+                    MZ_PART = $("#MZ2_PART");
+                }
             }
             MZ_FULL.show();
             MZ_PART.hide();

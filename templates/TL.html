@@ -28,20 +28,30 @@
         <label id="message"></label>
         <!-- Mapa de calor del piso para MZ-->
         <div id="MZ" style="display: inline-block">
-            <label>Piso </label>
-            <select id="floor_select">
-                <option disabled selected value></option>
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-            </select>
+            <label> Mezzanine: 
+                <select id="MZ_select">
+                    <option selected value>MZ1</option>
+                    <option>MZ2</option>
+                </select>
+            </label>
             <br>
-            <label>Tipo de mapa</label>
-            <select id="type_heatmap">
-                <option value="VOLUMEN">Volumen</option>
-                <option value="MELI">MELI</option>
-            </select> <br>  
+            <label>Tipo de mapa:
+                <select id="type_heatmap">
+                    <option value="VOLUMEN">Volumen</option>
+                    <option value="MELI">MELI</option>
+                </select> 
+            </label>
+            <br>  
+            <label>Piso:    
+                <select id="floor_select">
+                    <option disabled selected value></option>
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                </select>
+            </label>
+            <br>
             <button id="update_floor">Actualizar piso</button> <br>
             <br>
             <div id="MZ_FULL">
@@ -61,10 +71,10 @@
                     {% endfor %}
                 </map>
                 <div id="MZ_FULL_BOX"  style="position: relative;display: inline-block;">
-                    <img src="{{url_for('static', filename='img/MZ_FULL_0.png')}}" id="MZ_FULL_0_IMG" width="{{3554/2.8}}" height="{{2586/2.8}}" usemap="#MAPMZ_FULL">
-                    <img src="{{url_for('static', filename='img/MZ_FULL.png')}}" id="MZ_FULL_IMG" width ="{{3554/2.8}}" height="{{2586/2.8}}" usemap="#MAPMZ_FULL">
-                    <!-- Origen de la izquierda para cada iteración, arranca en 37 -->
-                    {% set left = namespace(value=37/2.8) %}
+                    <img src="{{url_for('static', filename='img/MZ_FULL.png')}}" style="display: none;" id="MZ_FULL_0_IMG" width="{{5956/5}}" height="{{4590/5}}" usemap="#MAPMZ_FULL">
+                    <img src="{{url_for('static', filename='img/MZ_FULL.png')}}" id="MZ_FULL_IMG" width ="{{5956/5}}" height="{{4590/5}}" usemap="#MAPMZ_FULL">
+                    <!-- Origen de la izquierda para cada iteración, arranca en 5    -->
+                    {% set left = namespace(value=5) %}
                     <!-- Por cada calle (1 a 27) -->
                     {% for x in range(27) %}
                         {% set suma = namespace(value=53/2.8) %}
@@ -87,10 +97,10 @@
                         
 
                             {% if i % 2 == 0 %}
-                                <canvas id="full_{{27-x}}_{{86 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                                <canvas id="full_{{27-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
                             {% else %}
-                                {% set num = left.value + 50/2.8 %}
-                                <canvas id="full_{{27-x}}_{{86 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set num = left.value + 19 %}
+                                <canvas id="full_{{27-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
                                 {% set top.value = top.value+suma.value %}
     
                                 <!-- Corregir altura -->
@@ -113,12 +123,10 @@
                         {% endfor %}
                             {% set left.value = left.value + 130/2.8 %}
                     {% endfor %}
-                </div>
-                
-
-            </div> 
+                </div>                
+            </div>
             <div id="MZ_PART">
-                        <map name = "MAPMZ_PART">
+                <map name = "MAPMZ_PART">
                     {% set bottomLeft = namespace(value=13/2.8) %}
                     {% set topRight = namespace(value=130/2.8) %}
     
@@ -134,13 +142,12 @@
                     {% endfor %}
                 </map>
                 <div id="MZ_PART_BOX" style="position: relative;display: inline-block;">
-                    <img src="{{url_for('static', filename='img/MZ_PART.png')}}" id="MZ_PART_IMG" width ="{{3540/2.8}}" height="{{1881/2.8}}"usemap="#MAPMZ_PART">
+                    <img src="{{url_for('static', filename='img/MZ_PART.png')}}" id="MZ_PART_IMG" width ="{{5956/5}}" height="{{3292/5}}"usemap="#MAPMZ_PART">
                     <!-- Origen de la izquierda para cada iteración, arranca en 37 -->
-                    {% set left = namespace(value=22/2.8) %}
+                    {% set left = namespace(value=26/5) %}
                     <!-- Por cada calle (1 a 27) -->
                     {% for x in range(27) %}
-                        {% set suma = namespace(value=54/2.8) %}
-                        {% set top = namespace(value=25/2.8) %}
+                        {% set top = namespace(value=35/5) %}
     
                         {% for i in range(62) %}
 
@@ -150,37 +157,70 @@
                                 {% set top.value = top.value + 3/2.8 %}
                             {% endif %}
                             {% if i % 2 == 0 %}
-                                <canvas id="part_{{27-x}}_{{62 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                                <canvas id="part_{{27-x}}_{{62 - i}}" width="{{72/5}}" height="{{72/5}}" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
                             {% else %}
-                                {% set num = left.value + 50/2.8 %}
-                                <canvas id="part_{{27   -x}}_{{62 - i}}" width="{{32/2.8}}" height="{{30/2.8}}" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
-                                {% set top.value = top.value+suma.value %}
-    
-                                <!-- Corregir altura -->
-                                {% if suma.value < 55/2.8 %}
-                                    {% set suma.value = suma.value+1/2.8 %}
-                                {% else %}
-                                    {% set suma.value = suma.value-4/2.8 %}
-                                {% endif %}
-                                <!--  -->
+                                {% set num = left.value + 97.4/5 %}
+                                <canvas id="part_{{27   -x}}_{{62 - i}}" width="{{72/5}}" height="{{72/5}}" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set top.value = top.value+97.5/5 %}
                             {% endif %}
     
                             <!-- Pasar de calle por la avenida -->
                             {% if i == 41 %}
-                                {% set top.value = top.value + 68/2.8 %}
+                                {% set top.value = top.value + 100/5 %}
                             {% endif %}
                             <!--  -->
-                            {% endfor %}
-                            {% set left.value = left.value + 130/2.8 %}
-                            {% endfor %}
+                        {% endfor %}
+                        {% set left.value = left.value + 220.6/5 %}
+                    {% endfor %}
                 </div>
-                
+            </div>
+            <div id="MZ2_FULL" style="position: relative; display: inline-block;">
+            <map name = "MAPMZ2_FULL">
+                {% set bottomLeft = namespace(value=13/2.8) %}
+                {% set topRight = namespace(value=130/2.8) %}
+
+                {% for i in range(27) %}
+                    <area shape="rect" num="{{27-i}}" id="FULL_{{27-i}}"  style="cursor:help;" coords="{{bottomLeft.value}}, {{2541/2.8}}, {{topRight.value}}, {{2400/2.8}}" alt="Calle N°{{i+1}}">
+                    {% if i % 2 == 0 %}
+                        {% set bottomLeft.value = bottomLeft.value + 132/2.8 %}
+                        {% set topRight.value = topRight.value + 132/2.8 %}
+                    {% else %}
+                        {% set bottomLeft.value = bottomLeft.value + 128/2.8 %}
+                        {% set topRight.value = topRight.value + 128/2.8 %}
+                    {% endif %}
+                {% endfor %}
+            </map>
+                <div id="MZ_FULL_BOX"  style="position: relative;display: inline-block;">
+                    <img src="{{url_for('static', filename='img/MZ2_FULL.png')}}" id="MZ2_FULL_IMG" width ="{{5514/5}}" height="{{4590/5}}" usemap="#MAPMZ2_FULL">
+                    <!-- Origen de la izquierda para cada iteración, arranca en 5    -->
+                    {% set left = namespace(value=5) %}
+                    <!-- Por cada calle (28 a 52) -->
+                    {% for x in range(25) %}
+                        {% set suma = namespace(value=98/5) %}
+                        {% set top = namespace(value=8) %}    
+                        {% for i in range(86) %}
+                            {% if i % 2 == 0 %}
+                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="background-color: red;position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                            {% else %}
+                                {% set num = left.value + 19 %}
+                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="background-color: red; position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set top.value = top.value+suma.value %}
+                            {% endif %}
+    
+                            <!-- Pasar de calle por la aveni2da -->
+                            {% if i == 65 or i == 23 %}
+                                {% set top.value = top.value + 17.5 %}
+                            {% endif %}
+                            <!--  -->
+                        {% endfor %}
+                            {% set left.value = left.value + 220.5/5 %}
+                    {% endfor %}
+                </div>                
+            </div>
+            <div id="MZ2_PART" style="position: relative; display: inline-block;">
             </div>
             <button id="update">Actualizar</button>
-
-
-        </div>
-
+            </div>
         <div id="RK" class="RK_MAP" style="display: inline-block">
             <label>Nivel</label>
             <select id="nivel">

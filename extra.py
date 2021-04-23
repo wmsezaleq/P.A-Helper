@@ -215,7 +215,8 @@ class metrica:
             else:
                 self.__checked = False
     def __init__(self):
-        self.pos_volumen = self.__get_volumen([60.0, 42.0, 45.0])
+        self.posMZ_volumen = self.__get_volumen([60.0, 42.0, 45.0])
+        self.posRS_volumen = self.__get_volumen([60.0*5, 42.0*5, 45.0*5])
         self.reset()
         with open("pos","r") as file:
             self.pos_inexistentes = eval(file.read())
@@ -244,15 +245,20 @@ class metrica:
         if type(data) == str:
             data = [data, 100, 0]
         direccion = data[0][:4]
+        calle = int(data[0][5:8])
+        if "MZ" in direccion and calle > 27:
+            direccion = "MZ2-" + direccion[3]
         if direccion[:2] == "RK":
             direccion = data[0][:3] + data[0][13:][:2]
         self.pos[data[0]] = [data[1], data[2]]
 
 
-        if int(data[0][5:8]) != 26 or int(data[0][5:8]) != 27:
-            if direccion in self.totalpos_disponibles and ((data[2] < 4 and direccion[:2] == "MZ") or (data[2] == 0 and direccion[:2] == "RK")):
+        if calle != 26 or calle != 27:
+            if direccion in self.totalpos_disponibles and ((data[2] < 4 and (direccion[:2] == "MZ" or direccion[:2] == "RS")) or (data[2] == 0 and direccion[:2] == "RK")):
                 self.totalpos_disponibles[direccion] += 1
-            elif ((data[2] < 4 and direccion[:2] == "MZ") or (data[2] == 0 and direccion[:2] == "RK")):
+                    
+            
+            elif ((data[2] < 4 and (direccion[:2] == "MZ" or direccion[:2] == "RS")) or (data[2] == 0 and direccion[:2] == "RK")):
                 self.totalpos_disponibles[direccion] = 1
             elif direccion in self.totalpos_ocupadas:
                 self.totalpos_ocupadas[direccion] += 1
@@ -293,10 +299,16 @@ class metrica:
                     self.totalpos_ocupadas[direccion] += 1
                 else:
                     self.totalpos_ocupadas[direccion] = 1
-    def get_free_percentage(self, obj_volumen):
-        pos_volumen = self.pos_volumen
+    def get_free_percentage(self, obj_volumen, sector):
+        pos_volumen = 0
+        lugar = 0
+        if sector == "RS": 
+            pos_volumen = self.posRS_volumen
+        else:
+            pos_volumen = self.posMZ_volumen
+        lugar = pos_volumen
         pos_volumen -= obj_volumen
-        return round((pos_volumen * 100) / self.pos_volumen,2)
+        return round((pos_volumen * 100) / lugar, 2)
 
 def string_zero(num):
     data = ""
