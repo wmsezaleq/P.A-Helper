@@ -97,7 +97,8 @@ class SQL_Manager:
 
 if __name__ == "__main__":
     Database = SQL_Manager(DB_name="DB")
-    data = None
-    with open("pos","r") as file:
-        data = eval(file.read())
-    print(len(data))
+    data = []
+    for i in Database.get("invalid_pos", "*"):
+        data.append(i[0])
+    with open("pos","w") as file:
+        file.write(str(data))

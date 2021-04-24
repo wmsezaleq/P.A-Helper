@@ -12,7 +12,9 @@
 
 }
 
-
+th, td{
+    padding: 5px;
+}
 .found{
     background-color: #000000;
 }

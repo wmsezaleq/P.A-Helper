@@ -7,10 +7,10 @@ var rainbow = new Rainbow();
 function update_all(sec)
 {
     var tipo = 0;
-    if (sec == "MZ-0" || sec == "MZ-1")
-    tipo = 0;
-    else if (sec == "MZ-2" || sec == "MZ-3")
-    tipo = 1;
+    if (sec == "MZ-0" || sec == "MZ-1" || sec == "MZ2-0" || sec == "MZ2-1")
+        tipo = 0;
+    else if (sec == "MZ-2" || sec == "MZ-3" || sec == "MZ2-2" || sec == "MZ2-3")
+        tipo = 1;
     else if (sec.substring(0, 2) == "RK")
     {
         tipo = 2;
@@ -55,11 +55,25 @@ function update_all(sec)
     var contador = 0;
     var type = $("#type_heatmap").children("option:selected").val() == "VOLUMEN";
     if (tipo < 2)
-        data = google.visualization.arrayToDataTable([
-            ['Tipo', 'Cantidad'],
-            ["Disponible", MZ[0][sec]],
-            ["Ocupada", MZ[2][sec]]
-        ]);
+    {
+        if ($("#MZ_select").children("option:selected").val() == "MZ1")
+        {
+            data = google.visualization.arrayToDataTable([
+                ['Tipo', 'Cantidad'],
+                ["Disponible", MZ[0][sec]],
+                ["Ocupada", MZ[2][sec]]
+            ]);
+        }
+        else
+        {
+            data = google.visualization.arrayToDataTable([
+                ['Tipo', 'Cantidad'],
+                ["Disponible", MZ2[0]["MZ2-" + sec[3]]],
+                ["Ocupada", MZ2[2]["MZ2-" + sec[3]]]
+            ]);
+        }
+
+    }
     else
         data = google.visualization.arrayToDataTable([
             ['Tipo', 'Cantidad'],
@@ -270,6 +284,58 @@ $(function(){
         MZ = msg[1];
         RK = msg[2];
         MZ2 = msg[3];
+        var disp = 0;
+        var ocup = 0;
+        var porcentaje = 0.0;
+        function get_color(p3)
+        {
+            if (p3 > 80)
+                return "#ADFF2F";
+            else if (p3 <= 80  && p3 > 60)
+                return "#FFFF00";
+            else if (p3 <= 60 && p3 > 30)
+                return "#FFD700";
+
+            else if (p3 <= 30 && p3 > 0)
+                return "#FF6347";
+            return "#0000";
+        }
+        for (i=0; i<4; i++)
+        {
+            disp = MZ[0]["MZ-" + i];
+            ocup = MZ[2]["MZ-" + i];
+            porcentaje = disp * 100 / (disp + ocup);
+
+            $("#MZ-" + i + " td").eq(1).text(disp);
+            $("#MZ-" + i + " td").eq(2).text(ocup);            
+            $("#MZ-" + i + " td").eq(3).text(porcentaje.toFixed(2)).css('background-color', get_color(porcentaje));
+
+            disp = MZ2[0]["MZ2-" + i];
+            ocup = MZ2[2]["MZ2-" + i];
+            porcentaje = disp * 100 / (disp + ocup);
+
+            $("#MZ2-" + i + " td").eq(1).text(disp);
+            $("#MZ2-" + i + " td").eq(2).text(ocup);            
+            $("#MZ2-" + i + " td").eq(3).text(porcentaje.toFixed(2)).css('background-color', get_color(porcentaje));
+            j = i+2
+            disp = RK[0]["RK-0" + (i+2)];
+            ocup = RK[2]["RK-0" + (i+2)];
+            porcentaje = disp * 100 / (disp + ocup);
+            if (isNaN(porcentaje))
+                porcentaje = 0
+            $("#RK-" + j + " td").eq(1).text(disp);
+            $("#RK-" + j + " td").eq(2).text(ocup);            
+            $("#RK-" + j + " td").eq(3).text(porcentaje.toFixed(2)).css('background-color', get_color(porcentaje));
+        }
+        disp = RK[0]["RK-06"];
+        ocup = RK[2]["RK-06"];
+        porcentaje = disp * 100 / (disp + ocup);
+        if (isNaN(porcentaje))
+            porcentaje = 0
+        $("#RK-6 td").eq(1).text(disp);
+        $("#RK-6 td").eq(2).text(ocup);            
+        $("#RK-6 td").eq(3).text(porcentaje.toFixed(2)).css('background-color', get_color(porcentaje));
+
 
     });
     $("#update_level").click(function()
@@ -789,57 +855,133 @@ $(function(){
         update_all("RK-0" + $(this).children("option:selected").val());
     });
     $("#MZ_select").change(function(){
+        // Si se selecciona MZ1
         if ($(this).children("option:selected").val() == "MZ1")
         {
-            $("#MZ_FULL").show();
-            $("#MZ2_FULL").hide();
+            // Si la seleccion de piso es el piso 0 o 1 (FULL)
+            if (parseInt($("#floor_select").children("option:selected").val()) < 2)
+            {
+                $("#MZ_FULL").css("display", "inline-block");
+                $("#MZ_PART").css("display", "none");
+                $("#MZ2_FULL").css("display", "none");
+                $("#MZ2_PART").css("display", "none");
+
+            }
+            // Sino, si la seleccion de piso es de 2 o 3 (PART)
+            else
+            {
+                $("#MZ_FULL").css("display", "none");
+                $("#MZ_PART").css("display", "inline-block");
+                $("#MZ2_FULL").css("display", "none");
+                $("#MZ2_PART").css("display", "none");
+            }
         }
+        // Si se selecciona MZ2
         else
         {
-            $("#MZ2_FULL").show(); 
-            $("#MZ_FULL").hide();
+            if (parseInt($("#floor_select").children("option:selected").val()) < 2)
+            {
+                $("#MZ2_FULL").css("display", "inline-block");
+                $("#MZ2_PART").css("display", "none");
+                $("#MZ_FULL").css("display", "none");
+                $("#MZ_PART").css("display", "none");
+
+            }
+            // Sino, si la seleccion de piso es de 2 o 3 (PART)
+            else
+            {
+                $("#MZ2_FULL").css("display", "none");
+                $("#MZ2_PART").css("display", "inline-block");
+                $("#MZ_FULL").css("display", "none");
+                $("#MZ_PART").css("display", "none");
+            }
         }
     });
     $("#floor_select").change(function(){
-        var MZ_FULL = $("#MZ_FULL");
-        var MZ_PART = $("#MZ_PART");
         var seleccion = $(this).children("option:selected").val();
+        // Si es entre el piso 0 o 1
+        var MZNUM = ($("#MZ_select").children("option:selected").val() == "MZ1") ? 1 : 2; 
         if (this.value == 0 || this.value == 1)
         {
+            // Si el piso es 0 y la el MZ1
             if (this.value == 0)
             {
-                if ($("#MZ_SELECT").value == 0) // MZ1
+                switch(MZNUM)
                 {
-                    $("#MZ_FULL_0_IMG").show();
-                    $("#MZ_FULL_IMG").hide();
-                }
-                else
-                {
+                    case 1:
+                    {
+                        $("#MZ_FULL_0_IMG").show();
+                        $("#MZ_FULL_IMG").hide();
+                        $("#MZ_FULL").css("display", "inline-block");
+                        $("#MZ_PART").css("display", "none");
+                        $("#MZ2_FULL").css("display", "none");
+                        $("#MZ2_PART").css("display", "none");
+                        break;
+                    }
+
+                    case 2: 
+                    {
+                        $("#MZ2_FULL").css("display", "inline-block");
+                        $("#MZ2_PART").css("display", "none");
+                        $("#MZ_FULL").css("display", "none");
+                        $("#MZ_PART").css("display", "none");
+                        break;
+                    }
                 }
             }
             else
             {
-                if ($("#MZ_SELECT").value == 0) // MZ1
+                switch(MZNUM)
                 {
-                    $("#MZ_FULL_0_IMG").hide();
-                    $("#MZ_FULL_IMG").show();
-                }
-                else
-                {
+                    case 1:
+                    {
+                        $("#MZ_FULL_IMG").show();
+                        $("#MZ_FULL_0_IMG").hide();
+                        $("#MZ_FULL").css("display", "inline-block");
+                        $("#MZ_PART").css("display", "none");
+                        $("#MZ2_FULL").css("display", "none");
+                        $("#MZ2_PART").css("display", "none");
+                        break;
+                    }
+
+                    case 2: 
+                    {
+                        $("#MZ2_FULL").css("display", "inline-block");
+                        $("#MZ2_PART").css("display", "none");
+                        $("#MZ_FULL").css("display", "none");
+                        $("#MZ_PART").css("display", "none");
+                        break;
+                    }
                 }
             }
-            MZ_FULL.show();
-            MZ_PART.hide();
             sortAllPos();
 
             update_all("MZ-" + seleccion);
         }
         else
         {
-            MZ_PART.show();
-            MZ_FULL.hide();
-            sortAllPos();
+            switch(MZNUM)
+            {
+                case 1:
+                {
+                    $("#MZ_PART").css("display", "inline-block");
+                    $("#MZ_FULL").css("display", "none");
+                    $("#MZ2_FULL").css("display", "none");
+                    $("#MZ2_PART").css("display", "none");
+                    break;
+                }
 
+                case 2: 
+                {
+                    $("#MZ2_PART").css("display", "inline-block");
+                    $("#MZ2_FULL").css("display", "none");
+                    $("#MZ_FULL").css("display", "none");
+                    $("#MZ_PART").css("display", "none");
+                    break;
+                }
+            }
+            sortAllPos();
+            
             update_all("MZ-"+ seleccion);
         }
     });

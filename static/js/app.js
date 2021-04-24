@@ -280,12 +280,12 @@ $(function(){
             $("#calle").empty();
             if ($(this).val() == "0" || $(this).val() == "1")
             {
-                for(var i = 1; i < 26; i++)
+                for(var i = 1; i < 58; i++)
                     $("#calle").append("<option value='" + i + "'>" + i + "</option>");
     
             }
             else{
-                for(var i = 1; i < 27; i++)
+                for(var i = 1; i < 58; i++)
                     $("#calle").append("<option value='" + i + "'>" + i + "</option>");
             }
         }
@@ -310,11 +310,11 @@ $(function(){
             var piso = parseInt($("#piso").children("option:selected").val() == "1");
             if(piso <= 1)
             {
-                for(var i = 1; i < 25; i++)
+                for(var i = 1; i < 58; i++)
                     $("#calle").append("<option value=" + i + " name=" + i + ">" + i + "</option>");
             }
             else
-                for(var i = 1; i < 26; i++)
+                for(var i = 1; i < 58; i++)
                     $("#calle").append("<option value=" + i + " name=" + i + ">" + i + "</option>");
         }
         else if (sector == "RO")

@@ -19,7 +19,100 @@
         </header>
 
         <!-- Momento 0 -->
-        <div id = "inicio">
+        <div id = "inicio" >
+            <table style="position: absolute; left:35; top: 130; column-width: 10px; font-size: 15px;">
+                <tr>
+                    <th >Sector</th>
+                    <th>Pos disponibles</th>
+                    <th>Pos ocupadas</th>
+                    <th>% disponibilidad</th>
+                </tr>
+                <tr id="MZ-0">
+                    <td style="background-color: lightblue;">MZ-0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ-1">
+                    <td style="background-color: lightblue;">MZ-1</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ-2">
+                    <td style="background-color: lightblue;">MZ-2</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ-3">
+                    <td style="background-color: lightblue;">MZ-3</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ2-0">
+                    <td style="background-color: lightslategray;">MZ2-0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr id="MZ2-1">
+                    <td style="background-color: lightslategray;">MZ2-1</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ2-2">
+                    <td style="background-color: lightslategray;">MZ2-2</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="MZ2-3">
+                    <td style="background-color: lightslategray;">MZ2-3</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+
+                </tr>
+                <tr id="RK-2">
+                    <td style="background-color: lightcoral;">RK-2</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr id="RK-3">
+                    <td style="background-color: lightcoral;">RK-3</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr id="RK-4">
+                    <td style="background-color: lightcoral;">RK-4</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr id="RK-5">
+                    <td style="background-color: lightcoral;">RK-5</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr id="RK-6">
+                    <td style="background-color: lightcoral;">RK-6</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+            </table>
             <button id="RK_SEL" class="giant">RK</button><br>
             <button id="MZ_SEL" class="giant">MZ</button><br>
             <button id="SI_SEL" class="giant">SI</button><br>
@@ -30,8 +123,8 @@
         <div id="MZ" style="display: inline-block">
             <label> Mezzanine: 
                 <select id="MZ_select">
-                    <option selected value>MZ1</option>
-                    <option>MZ2</option>
+                    <option value="MZ1">MZ1</option>
+                    <option value="MZ2">MZ2</option>
                 </select>
             </label>
             <br>
@@ -165,7 +258,7 @@
                     {% endif %}
                 {% endfor %}
             </map>
-                <div id="MZ_FULL_BOX"  style="position: relative;display: inline-block;">
+                <div id="MZ2_FULL_BOX"  style="position: relative;display: inline-block;">
                     <img src="{{url_for('static', filename='img/MZ2_FULL.png')}}" id="MZ2_FULL_IMG" width ="{{5514/5}}" height="{{4590/5}}" usemap="#MAPMZ2_FULL">
                     <!-- Origen de la izquierda para cada iteración, arranca en 5    -->
                     {% set left = namespace(value=5) %}
@@ -175,10 +268,10 @@
                         {% set top = namespace(value=8) %}    
                         {% for i in range(86) %}
                             {% if i % 2 == 0 %}
-                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="background-color: red;position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
                             {% else %}
                                 {% set num = left.value + 19 %}
-                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="background-color: red; position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                <canvas id="full_{{52-x}}_{{86 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
                                 {% set top.value = top.value+suma.value %}
                             {% endif %}
     
@@ -193,6 +286,32 @@
                 </div>                
             </div>
             <div id="MZ2_PART" style="position: relative; display: inline-block;">
+                <div id="MZ2_PART_BOX"  style="position: relative;display: inline-block;">
+                    <img src="{{url_for('static', filename='img/MZ2_PART.png')}}" id="MZ2_PART_IMG" width ="{{5514/5}}" height="{{3292/5}}" usemap="#MAPMZ2_FULL">
+                    <!-- Origen de la izquierda para cada iteración, arranca en 5    -->
+                    {% set left = namespace(value=5) %}
+                    <!-- Por cada calle (28 a 52) -->
+                    {% for x in range(25) %}
+                        {% set suma = namespace(value=97/5) %}
+                        {% set top = namespace(value=8) %}    
+                        {% for i in range(62) %}
+                            {% if i % 2 == 0 %}
+                                <canvas id="part_{{52-x}}_{{62 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{left.value}}; top: {{top.value}};"></canvas>
+                            {% else %}
+                                {% set num = left.value + 19 %}
+                                <canvas id="part_{{52-x}}_{{62 - i}}" tipo="MZ" width="15" height="15" style="position:absolute; left: {{num}}; top: {{top.value}};"></canvas>
+                                {% set top.value = top.value+suma.value %}
+                            {% endif %}
+    
+                            <!-- Pasar de calle por la aveni2da -->
+                            {% if i == 41 %}
+                                {% set top.value = top.value + 20.5 %}
+                            {% endif %}
+                            <!--  -->
+                        {% endfor %}
+                            {% set left.value = left.value + 220.5/5 %}
+                    {% endfor %}
+                </div>                
             </div>
             <button id="update">Actualizar</button>
             </div>

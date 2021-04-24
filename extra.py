@@ -216,7 +216,8 @@ class metrica:
                 self.__checked = False
     def __init__(self):
         self.posMZ_volumen = self.__get_volumen([60.0, 42.0, 45.0])
-        self.posRS_volumen = self.__get_volumen([60.0*5, 42.0*5, 45.0*5])
+        self.posRS_volumen = self.__get_volumen([60.0, 42.0*5, 45.0])
+
         self.reset()
         with open("pos","r") as file:
             self.pos_inexistentes = eval(file.read())
@@ -241,27 +242,39 @@ class metrica:
     def add_meli(self, pos):
         self.reporte_meli.append([pos])
 
+    # Funcion para añadir las posiciones a la metrica y sumar a las posiciones disponibles/ocupadas
     def add(self, data):
+        # Si la data es igual a una string (posicion de RK)
         if type(data) == str:
+            # Se toma como el espacio vacio
             data = [data, 100, 0]
-        direccion = data[0][:4]
-        calle = int(data[0][5:8])
-        if "MZ" in direccion and calle > 27:
-            direccion = "MZ2-" + direccion[3]
+        direccion = None
+        # Si la direccion es de MZ o RS y las calles son de 28 para arriba (nuevo Mezzanine)
+        if (data[0][:2] == "MZ" or data[0][:2] == "RS") and int(data[0][5:8]) > 27:
+            # se declara la key como MZ2-piso
+            direccion = "MZ2-" + data[0][3]
+        else:
+            direccion = data[0][:4]
+        # En caso de que sea RK, se declara la key como RK-nivel
         if direccion[:2] == "RK":
             direccion = data[0][:3] + data[0][13:][:2]
+        # El diccionario en la key posicion recibida es igual a un array [volumen, cant.melis]
         self.pos[data[0]] = [data[1], data[2]]
 
-
-        if calle != 26 or calle != 27:
-            if direccion in self.totalpos_disponibles and ((data[2] < 4 and (direccion[:2] == "MZ" or direccion[:2] == "RS")) or (data[2] == 0 and direccion[:2] == "RK")):
+        # Si las calles son distintas de 26 o 27 (NIP no cuentan para la cant. de lugar disponible)
+        if int(data[0][5:8]) != 26 or int(data[0][5:8]) != 27:
+            # Si la key (Sector-piso) esta en el diccionario y MZ o RS tienen menor a 4 melis o RK tiene 0 melis...
+            if direccion in self.totalpos_disponibles and ((direccion[:2] == "MZ" or direccion[:2] == "RS") and data[2] < 4 or (data[2] == 0 and direccion[:2] == "RK")):
+                # Se suma el valor que ya este en con 1
                 self.totalpos_disponibles[direccion] += 1
-                    
-            
+            # Si la key (sector-psio) no esta en el diccionario y se cumple la misma condicion
             elif ((data[2] < 4 and (direccion[:2] == "MZ" or direccion[:2] == "RS")) or (data[2] == 0 and direccion[:2] == "RK")):
+                # Se declara la key y el numero 1 (inicio)
                 self.totalpos_disponibles[direccion] = 1
+            # Sino, si existe la direccion en el diccionario ocupado
             elif direccion in self.totalpos_ocupadas:
                 self.totalpos_ocupadas[direccion] += 1
+            # Si no exist en el diccionario, crea la nueva key y le asigna valor 1
             else:
                 self.totalpos_ocupadas[direccion] = 1
 
@@ -286,29 +299,39 @@ class metrica:
         return i
     def update(self):
         for dire in self.pos:
-            direccion = dire[:4]
             data = self.pos[dire]
+            direccion = None
+            if (dire[:2] == "MZ" or dire[:2] == "RS") and int(dire[5:8]) > 27:
+                # se declara la key como MZ2-piso
+                direccion = "MZ2-" + dire[3]
+            else:
+                direccion = dire[:4]
             if dire[:2] == "RK":
                 direccion = dire[:3] + dire[13:][:2]
+            # Si las calles son distintas de 26 o 27 (NIP no cuentan para la cant. de lugar disponible)
             if int(dire[5:8]) != 26 or int(dire[5:8]) != 27:
-                if direccion in self.totalpos_disponibles and ((data[1] < 4 and direccion[:2] == "MZ") or (data[1] == 0 and direccion[:2] == "RK")):
+                # Si la key (Sector-piso) esta en el diccionario y MZ o RS tienen menor a 4 melis o RK tiene 0 melis...
+                if direccion in self.totalpos_disponibles and ((direccion[:2] == "MZ" or direccion[:2] == "RS") and data[1] < 4 or (data[1] == 0 and direccion[:2] == "RK")):
+                    # Se suma el valor que ya este en con 1
                     self.totalpos_disponibles[direccion] += 1
-                elif ((data[1] < 4 and direccion[:2] == "MZ") or (data[1] == 0 and direccion[:2] == "RK")):
+                # Si la key (sector-psio) no esta en el diccionario y se cumple la misma condicion
+                elif ((data[1] < 4 and (direccion[:2] == "MZ" or direccion[:2] == "RS")) or (data[1] == 0 and direccion[:2] == "RK")):
+                    # Se declara la key y el numero 1 (inicio)
                     self.totalpos_disponibles[direccion] = 1
+                # Sino, si existe la direccion en el diccionario ocupado
                 elif direccion in self.totalpos_ocupadas:
                     self.totalpos_ocupadas[direccion] += 1
+                # Si no exist en el diccionario, crea la nueva key y le asigna valor 1
                 else:
                     self.totalpos_ocupadas[direccion] = 1
     def get_free_percentage(self, obj_volumen, sector):
-        pos_volumen = 0
-        lugar = 0
-        if sector == "RS": 
+        pos_volumen = None
+        if sector == "RS":
             pos_volumen = self.posRS_volumen
         else:
             pos_volumen = self.posMZ_volumen
-        lugar = pos_volumen
-        pos_volumen -= obj_volumen
-        return round((pos_volumen * 100) / lugar, 2)
+        resta = pos_volumen - obj_volumen
+        return round((resta * 100) / pos_volumen,2)
 
 def string_zero(num):
     data = ""
