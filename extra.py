@@ -2,9 +2,11 @@ from tkinter import Tk, Button, Entry, Label
 import tkinter.font as font
 from selenium import webdriver
 import gspread
+from UserManager import User_Manager
 from oauth2client.service_account import ServiceAccountCredentials
 import threading
 import time
+import requests
 
 class mainForm:
     def accept(self):
@@ -72,25 +74,17 @@ class mainForm:
 
 from time import sleep
 def buscador():
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 640 XL LTE) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Mobile Safari/537.36 Edge/12.10166"')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-
-    driver.get("https://www.mercadolibre.com/jms/mla/lgz/login?platform_id=ML&go=https%3A%2F%2Fwms.mercadolibre.com.ar%2F&loginType=explicit")
-    sleep(5)
-    while driver.current_url != "https://wms.mercadolibre.com.ar/":
-        sleep(0.5)
-
+    Acc = User_Manager()
+    Acc.login()
     with open("data", "r") as file:
         data = {}
         try:
             data = eval(file.read())
         except:
             pass
-    data['cookies'] = driver.get_cookies()
+    data['cookies'] = requests.utils.dict_from_cookiejar(Acc.jar)
     with open("data", "w") as file:
         file.write(str(data))
-    driver.close()
 
 
 class SpreadDoc:

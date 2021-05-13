@@ -27,6 +27,8 @@ function update_all(sec)
                 for (var modulo=1; modulo <= 86; modulo++)
                 {
                     $("#full_" + calle + "_" + modulo).css("opacity", 0);
+                    $("#full2_" + calle + "_" + modulo).css("opacity", 0);
+
                 }
             }
             else if (tipo == 1)
@@ -34,6 +36,8 @@ function update_all(sec)
                 for (var modulo=1; modulo <= 62; modulo++)
                 {
                     $("#part_" + calle + "_" + modulo).css("opacity", 0);
+                    $("#part2_" + calle + "_" + modulo).css("opacity", 0);
+
                 }
             }
         }
@@ -84,7 +88,10 @@ function update_all(sec)
 
     for (key in all_pos)
     {
-        if (key.substring(0, 4) == sec || "RK-" + key.substring(13, 15) == sec)
+        // Si el elemento de la lista tiene el mismo sector que el sector seleccionado Y 
+        // El mezzanine seleccionado 
+        if ((key.substring(0, 4) == sec && (($("#MZ_select").children("option:selected").val() == "MZ1" && parseInt(key.substring(5,8) <= 27)) || 
+        ($("#MZ_select").children("option:selected").val() == "MZ2" && parseInt(key.substring(5,8) >= 28)))) || "RK-" + key.substring(13, 15) == sec)
         {
             var modulo = parseInt(key.substring(9, 12));
             var calle = parseInt(key.substring(5, 8));
@@ -352,7 +359,13 @@ $(function(){
     {
         if(confirm("Está a punto de actualizar el piso en su totalidad, esta tarea podría relantizar la PC, ¿está seguro que desea continuar?"))
         {
-            socketio.emit('update-floor', $("#floor_select").children("option:selected").val());
+            var sector = "";
+            if ($("#MZ_select").children("option:selected").val() == "MZ2")
+                sector = "MZ2-";
+            else
+                sector = "MZ-";
+
+            socketio.emit('update-floor', sector + $("#floor_select").children("option:selected").val());
         }
     });
 

@@ -468,8 +468,16 @@ def buscarLugar(sec, piso, calle, *args):
                 start_dir = f"RS-0-{string_zero(calle)}-001-01-01"
                 end_dir = f"RS-0-{string_zero(calle)}-086-01-01"
                 scraper(start_dir, end_dir)
-
-
+            elif piso == 2 and (calle == 34 or \
+                                calle == 42):
+                start_dir = f"MZ-2-{string_zero(calle)}-002-01-01"
+                end_dir = f"MZ-2-{string_zero(calle)}-062-04-05"
+                scraper(start_dir, end_dir)
+            elif piso == 2 and (calle == 33 or \
+                                calle == 41):
+                start_dir = f"MZ-2-{string_zero(calle)}-001-01-01"
+                end_dir = f"MZ-2-{string_zero(calle)}-061-04-05"
+                scraper(start_dir, end_dir)
             else:
                 start_dir = ""
                 end_dir = ""
@@ -759,8 +767,12 @@ def update_lvl(msg):
 @socketio.on('update-floor')
 def update_floor(msg):
     def t(msg):
-        for calle in range(27):
-            buscarLugar("MZ", int(msg), calle+1)
+        if "MZ2" in msg:
+            for calle in range(28, 53):
+                buscarLugar("MZ", int(msg[4:]), calle)
+        else:
+            for calle in range(27):
+                buscarLugar("MZ", int(msg[3:]), calle+1)
     x = threading.Thread(target=t, daemon=True, args=(msg,))
     x.start()
 
@@ -878,7 +890,7 @@ if __name__ == '__main__':
         ip = str()
         port = int()
 
-        # buscador()
+        buscador()
         # form = mainForm()
         # form.start()
         
@@ -888,8 +900,8 @@ if __name__ == '__main__':
             port = int(data['port'])
             Metrica.pos = data['pos']
             Metrica.update()
-            for cookie in data['cookies']:
-                jar.set(cookie["name"], cookie["value"], domain=cookie["domain"], path=cookie["path"])                
+            for key in data["cookies"].keys():
+                jar.set(key, data["cookies"][key])                
 
                 
         local_ip = socket.gethostbyname(socket.gethostname())
@@ -910,7 +922,7 @@ if __name__ == '__main__':
         socketio.run(app, host=ip, port=port, debug=True)
     except Exception as e:
         print("Hubo un error hosteando el servidor... Traceroute: ")
-        print(e)
+        print(traceback.format_exc())
         input()
         del Metrica
     del Metrica
