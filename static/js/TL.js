@@ -17,24 +17,23 @@ function update_all(sec)
         rainbow.setNumberRange(0, 1);   
         rainbow.setSpectrum("#71FF09", "#FF3C00");
     }
-        
-    // 
     if (tipo < 2)
         for (var calle=1; calle <= 27; calle++)
         {
             if (tipo == 0)
             {
+                // Limpiando todos los canvas de todos los Mezzanine (full 86 modulos)
                 for (var modulo=1; modulo <= 86; modulo++)
                 {
                     $("#full_" + calle + "_" + modulo).css("opacity", 0);
                     $("#full2_" + calle + "_" + modulo).css("opacity", 0);
-
                 }
             }
             else if (tipo == 1)
             {
                 for (var modulo=1; modulo <= 62; modulo++)
                 {
+                    // Limpiando todos los canvas de todos los Mezzanine (part 62 modulos)
                     $("#part_" + calle + "_" + modulo).css("opacity", 0);
                     $("#part2_" + calle + "_" + modulo).css("opacity", 0);
 
@@ -42,6 +41,7 @@ function update_all(sec)
             }
         }
     else
+    {
         for (var calle=2; calle <= 17; calle++)
         {
             for (var modulo = 1; modulo <= 104; modulo++)
@@ -53,6 +53,7 @@ function update_all(sec)
 
             }
         }
+    }
     var old_modulo = 0;
     var old_calle = 0;
     var total = 0;
@@ -90,30 +91,47 @@ function update_all(sec)
     {
         // Si el elemento de la lista tiene el mismo sector que el sector seleccionado Y 
         // El mezzanine seleccionado 
-        if ((key.substring(0, 4) == sec && (($("#MZ_select").children("option:selected").val() == "MZ1" && parseInt(key.substring(5,8) <= 27)) || 
-        ($("#MZ_select").children("option:selected").val() == "MZ2" && parseInt(key.substring(5,8) >= 28)))) || "RK-" + key.substring(13, 15) == sec)
+        var MZ_seleccion = ($("#MZ_select").children("option:selected").val() == "MZ1") ? 1 : 2;
+        // Obtengo la calle del elemento en el array
+        var calle = parseInt(key.substring(5, 8));
+        /* Si (el SECTOR es igual al SECTOR SELECCIONADO [MZ] y 
+                el MZ seleccionado es MZ1 y calle menor igual a 27 o 
+                el MZ seleccionado es MZ2 y calle mayor igual a 28) o
+                El sector es de RK.... 
+        */
+        if (key.substring(0, 4) == sec && 
+        ((MZ_seleccion == 1 && calle <= 27) || 
+        (MZ_seleccion == 2 && calle >= 28)) || "RK-" + key.substring(13, 15) == sec)
         {
             var modulo = parseInt(key.substring(9, 12));
-            var calle = parseInt(key.substring(5, 8));
             var pos = 0;
+            // Si el tipo es 2 (Significado de RK)
             if (tipo == 2)
             {
                 pos = parseInt(key.substring(16, 18));
-                type = false; // Hardcodeo de que solo responda ante MELI
+                type = false; // Hardcodeo de que solo responda ante MELI debido a que en RK no se toma volumetría
             }
+            // si el ciclo recién inicia...
             if (old_modulo == 0)
             {
                 old_modulo = modulo;
                 old_calle = calle;
                 old_pos = pos;
+                // Si type es verdadero (MODO VOLUMEN)
                 if (type)
                     total = all_pos[key][0];
                 else
+                    // Sino, si el MELI es mayor a 4, tomarlo como 4
                     total = all_pos[key][1] > 4 ? 4 : all_pos[key][1];
                 contador = 1;
             }
+
+            /* Si (el modulo viejo es igual al modulo actual y el tipo es distinto de RK) o 
+                  (la posición vieja es igual a la posición nueva y el tipo es RK)
+            */         
             else if ((old_modulo == modulo && tipo != 2) || (old_pos == pos && tipo == 2))
             {
+                // Si está en MODO VOLUMEN 
                 if (type)
                         total+=all_pos[key][0];
                 else
@@ -123,14 +141,18 @@ function update_all(sec)
             }
             else
             {
+                // Elección de canvas según MZ seleccionado 
+                var canvas_mezzanine = (MZ_seleccion == 1) ? "_" : "2_";
+                // Si el contador es distinto de 0 (se reinició) y el tipo es MZ 
                 if (contador != 0 && tipo < 2)
                     color = rainbow.colourAt(total/contador);
                 else
                     color = rainbow.colourAt(total)
+                
                 if (!tipo)
-                    $("#full_" + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+                    $("#full" + canvas_mezzanine + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
                 else if (tipo == 1)
-                    $("#part_" + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+                    $("#part" + canvas_mezzanine + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
                 else
                     $("#RK_" + old_calle + "_" + old_modulo + "_" + old_pos).css({"background" : "#" + color, "opacity" : "0.8"});
                 old_modulo = modulo;
@@ -503,7 +525,6 @@ $(function(){
         var total_MZ = 0;
         for (const key in msg)
         {
-            console.log(key);
             var i = 0;
             for(const pallet in msg[key])
             {

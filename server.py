@@ -919,7 +919,7 @@ if __name__ == '__main__':
         y.start()
         x = threading.Thread(target=query, daemon=True)
         x.start()
-        socketio.run(app, host=ip, port=port, debug=True)
+        socketio.run(app, host=ip, port=port, debug=False)
     except Exception as e:
         print("Hubo un error hosteando el servidor... Traceroute: ")
         print(traceback.format_exc())

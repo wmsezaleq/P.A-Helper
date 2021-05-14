@@ -41,6 +41,7 @@ $(function(){
     
     const socketio = io();
     var data = []; 
+    var data_temp = [];
     var contador = 0;
     $("#picker").hide();
     var reportes = document.getElementById("reportes");
@@ -160,36 +161,46 @@ $(function(){
                 clearTable();
                 if ($("#type_melis").children("option:selected").val() == "Menor a")
                 {
+                    data_temp = [];
                     for(var i in data)
                     {
                         var index = data[i];
                         if (index[1] < parseInt($("#numero_melis").val()))
                         {
+                            data_temp.push([index[0], index[1], index[2]]);
                             restockTable(index[0], index[1], index[2]);
                         }
                     }
+                    contador = 0;
                 }
                 else
                 {
+                    data_temp = [];
                     for(var i in data)
                     {
                         var index = data[i];
                         if (index[1] > parseInt($("#numero_melis").val()))
                         {
+                            data_temp.push([index[0], index[1], index[2]]);
                             restockTable(index[0], index[1], index[2]);
                         }
                     }
+                    contador = 0;
                 }
+                update(data_temp[0][0], data_temp[0][1], data_temp[0][2]);
+
                 break;
             }
             case "Altura":
             {
                 clearTable();
+                data_temp = [];
                 for(var i in data)
                 {
                     var index = data[i]
                     if (parseInt(index[0].substring(13, 15)) == parseInt($("#numero_altura").val()))
                     {
+                        data_temp.push([index[0], index[1], index[2]]);
                         restockTable(index[0], index[1], index[2]);
                     }
                 }    
@@ -203,6 +214,7 @@ $(function(){
                     var index = data[i];
                     restockTable(index[0], index[1], index[2]);
                 }   
+                data_temp = data;
                 break;
             }
         }
@@ -211,6 +223,7 @@ $(function(){
     });
     $(document).on('click','#sort_asc', function(){
         data.sort();
+        data_temp = data;
         closeNav();
         clearTable();
         for (const index of data)
@@ -330,15 +343,15 @@ $(function(){
         contador--;
         if (contador < 0)
             contador = 0;
-        update(data[contador][0], data[contador][1], data[contador][2]);
+        update(data_temp[contador][0], data_temp[contador][1], data_temp[contador][2]);
 
     });
 
     $(document).on('click','#rightArrow', function(){
         contador++;
-        if (contador > data.length-1)
-            contador = data.length-1;
-        update(data[contador][0], data[contador][1], data[contador][2]);
+        if (contador > data_temp.length-1)
+            contador = data_temp.length-1;
+        update(data_temp[contador][0], data_temp[contador][1], data_temp[contador][2]);
     });
 
     // Socket connection
@@ -361,6 +374,7 @@ $(function(){
             update(msg[0], msg[1], msg[2]);
         }
         data.push([msg[0], msg[1], msg[2]]);
+        data_temp = data;
     });
 });
 
