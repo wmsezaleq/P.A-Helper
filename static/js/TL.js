@@ -7,9 +7,9 @@ var rainbow = new Rainbow();
 function update_all(sec)
 {
     var tipo = 0;
-    if (sec == "MZ-0" || sec == "MZ-1" || sec == "MZ2-0" || sec == "MZ2-1")
+    if (sec == "MZ-0" || sec == "MZ-1")
         tipo = 0;
-    else if (sec == "MZ-2" || sec == "MZ-3" || sec == "MZ2-2" || sec == "MZ2-3")
+    else if (sec == "MZ-2" || sec == "MZ-3")
         tipo = 1;
     else if (sec.substring(0, 2) == "RK")
     {
@@ -26,7 +26,8 @@ function update_all(sec)
                 for (var modulo=1; modulo <= 86; modulo++)
                 {
                     $("#full_" + calle + "_" + modulo).css("opacity", 0);
-                    $("#full2_" + calle + "_" + modulo).css("opacity", 0);
+                    if (calle + 27 <= 52)
+                        $("#full2_" + (calle + 27) + "_" + modulo).css("opacity", 0);
                 }
             }
             else if (tipo == 1)
@@ -35,7 +36,8 @@ function update_all(sec)
                 {
                     // Limpiando todos los canvas de todos los Mezzanine (part 62 modulos)
                     $("#part_" + calle + "_" + modulo).css("opacity", 0);
-                    $("#part2_" + calle + "_" + modulo).css("opacity", 0);
+                    if (calle + 27 <= 52)
+                        $("#part2_" + (calle + 27) + "_" + modulo).css("opacity", 0);
 
                 }
             }
@@ -99,9 +101,9 @@ function update_all(sec)
                 el MZ seleccionado es MZ2 y calle mayor igual a 28) o
                 El sector es de RK.... 
         */
-        if (key.substring(0, 4) == sec && 
-        ((MZ_seleccion == 1 && calle <= 27) || 
-        (MZ_seleccion == 2 && calle >= 28)) || "RK-" + key.substring(13, 15) == sec)
+        if ((key.substring(0, 4) == sec || key.substring(0,2) == "RS" && "MZ-" + key[3] == sec) &&  // Si es MZ y 
+        ((MZ_seleccion == 1 && calle <= 27) || // está seleccionado MZ1 y la calle es menor o igual a 27
+        (MZ_seleccion == 2 && calle >= 28)) || "RK-" + key.substring(13, 15) == sec) // o, está seleccionado MZ2 y la calle es mayor o igual a 28
         {
             var modulo = parseInt(key.substring(9, 12));
             var pos = 0;
@@ -167,14 +169,18 @@ function update_all(sec)
 
         }
     }
+    var canvas_mezzanine = (MZ_seleccion == 1) ? "_" : "2_";
     if (contador != 0 && tipo < 2)
         color = rainbow.colourAt(total/contador);
     else
         color = rainbow.colourAt(total)
         if (!tipo)
-        $("#full_" + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+        {
+            $("#full" + canvas_mezzanine + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+
+        }
     else if (tipo)
-        $("#part_" + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
+        $("#part" + canvas_mezzanine + old_calle + "_" + old_modulo).css({"background" : "#" + color, "opacity" : "0.8"});
 
 }
 function init(){
@@ -462,7 +468,7 @@ $(function(){
                     if (calle < 27)
                         dir = "#part_";
                     else
-                        dir = "#part_"
+                        dir = "#part2_"
                     $(dir + calle + "_" + modulo).css({"background" : "#" + color, "opacity" : "0.8"});
                 }
             }
@@ -930,6 +936,9 @@ $(function(){
                 $("#MZ_PART").css("display", "none");
             }
         }
+        
+
+        update_all("MZ-" + $("#floor_select").children("option:selected").val());
     });
     $("#floor_select").change(function(){
         var seleccion = $(this).children("option:selected").val();
@@ -989,7 +998,6 @@ $(function(){
                 }
             }
             sortAllPos();
-
             update_all("MZ-" + seleccion);
         }
         else

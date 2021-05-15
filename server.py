@@ -87,9 +87,13 @@ def scrapMELI(dire):
             return scrapMELI(dire)
         Metrica.add_meli(dire)
     return 0
+
+# Función que scrapeará todas las posiciones dado el rango start_dir y end_dir de posiciones
 def scraper(start_dir, end_dir):
+
     data_total = {}
     sector = start_dir[:8]
+    # Función que agrega a data_total en las direcciones, la volumetría de los MELIs que ésta posea
     def worker(row):
         try:
             if row[0][:4] in ("NA-9", "NI-9"):
@@ -115,12 +119,15 @@ def scraper(start_dir, end_dir):
             else:
                 data_total[row[0]] = [1, 0]
     print("Buscando desde {} ---> {}".format(start_dir, end_dir))
+    # Obtengo un StringIO del csv exportado por la API de MELI
     file_data = StringIO(requests.get("https://wms.mercadolibre.com.ar/api/reports/address/export/SKUS/{}/{}?fields=address_id%2Cinventory_id%2Ctotal".format(start_dir, end_dir), cookies=jar).text)
+    # Lo leo con csv reader y lo convierto en un array
     totalidad = list(csv.reader(file_data, delimiter=','))
     old_pos = ""
     actual_pos = ""
     threads = []
     mini_workers = {}
+    # Función que agrega a la métrica las direcciones con el lugar disponible y la cantidad en ésta misma, ademas de enviarlo a los clientes y al TL, calculando, por último, los valores exactos de cada sector con respecto a la relación disponibilidad/ocupación
     def miniworker(threads, direccion):
         t = threads
         for x in t:
@@ -181,36 +188,48 @@ def scraper(start_dir, end_dir):
         except Exception as e:
             # print("miniworker {}: {}".format(direccion, e.args[0]))
             print("POSIBLE ERROR DE CONEXION... REINICIE EL SERVIDOR.")
+    # Recorro cada fila en la totalidad del csv
     for row in totalidad:
+        # Si está vacío (quiere decir que no lo exportó bien)
         if row == []:
-            scraper(start_dir, end_dir)
+            scraper(start_dir, end_dir) # Lo scrapea nuevamente
             return
         try:
-            if row[0] == "Address":
+            if row[0] == "Address": # Si dice Address (primera fila de todo el array) lo saltea
                 continue    
-            actual_pos = row[0]
+            actual_pos = row[0] # Obtengo la posición actual
+            # Si la posición es de RK y es del nivel 1, salteo
             if actual_pos[:2] == "RK" and actual_pos[13:][:2] == "01":
                 continue
-            if old_pos == "":
+            # Si es la primera iteración, convierto old_pos en actual_pos
+            if old_pos == "": 
                 old_pos = actual_pos
-            elif old_pos != actual_pos:
-                i = threading.Thread(target=miniworker, args=(tuple(threads), old_pos), daemon=True)
-                mini_workers[old_pos] = i
-                mini_workers[old_pos].start()
-                threads = []
-                old_pos = actual_pos
-            x = threading.Thread(target=worker, args=(row,), daemon=True)
-            threads.append(x)
+            # Si la nueva pos es distinta a la old, procedo a escanear todos los melis de esa pos
+            elif old_pos != actual_pos: 
+                i = threading.Thread(target=miniworker, args=(tuple(threads), old_pos), daemon=True) # Creo un hilo con la función miniworker pasandole una tupla de los hilos, con la posición que correspondía
 
-        except:
+                mini_workers[old_pos] = i # En el diccionario miniworker, en la key de la posición a escanear, le declaro el hilo
+                mini_workers[old_pos].start() # Inicio el hilo en cuestión
+                threads = [] # Limpio el array de threads
+                old_pos = actual_pos # Declaro old_pos como la nueva pos
+            
+            # En cualquier caso, creo un hilo con la función worker, pasandole como argumento toda la fila
+            x = threading.Thread(target=worker, args=(row,), daemon=True)
+            threads.append(x) # Agrego el hilo al array de hilos
+
+        except: # En caso de error, continuo
             pass
             # print("ROW: {}".format(row))
+    # Si hay algún hilo almacenado todavía en el array...
     if threads:
-        i = threading.Thread(target=miniworker, args=(tuple(threads), old_pos), daemon=True)
+        i = threading.Thread(target=miniworker, args=(tuple(threads), old_pos), daemon=True) # Misma historia
         mini_workers[old_pos] = i
         mini_workers[old_pos].start()
+    # Espero a que cada hilo en mini_workers termine
     for key in mini_workers:
         mini_workers[key].join()
+
+    # Función que chequea la dirección si corresponde a las posiciones inexistentes  y obtiene los porcentajes de disponibilidad
     def doit(direccion):
         totalidad = ""
         piso = int(direccion[3])
@@ -360,16 +379,26 @@ def scraper(start_dir, end_dir):
                 doit(direccion)
                 break
     threads_ = []
+    # En caso de que sea MZ o (sea NI o NA y no sea NA-9 o NI-9 [o sea RK])
     if start_dir[:2] == "MZ" or (start_dir[:2] in ("NA", "NI") and start_dir[:4] not in ("NA-9", "NI-9")):
+        # Ciclo en el rango del primer módulo hasta el último modulo+1 
         for modulo in range(int(start_dir[9:][:3]), int(end_dir[9:][:3])+1):
+            # Ciclo en el rango de niveles (0 a 3)
             for nivel in range(4):
+                # Si es el piso 2 y el modulo es menor a 8 (cajas divididas) y el nivel+1 es 2 o 3
                 if int(start_dir[3]) == 2 and modulo <= 8 and (nivel+1 == 2 or nivel+1 == 3):
+                    # Por cada posición en rango de 0 a 3
                     for pos in range(4):
+                        #Por cada nivel en rango de 1 a 4
                         for lvl in (1, 5):
+                            # Direccion pasa a ser el sector-modulo-0nivel-lvlpos
                             direccion = sector + "-" + string_zero(modulo) + "-0{}-{}{}".format(nivel+1, lvl, pos+1)
+                            # Si la dirección no esta en la data total...
                             if direccion not in data_total:
-                                x = threading.Thread(target=doit, args=(direccion,))
-                                threads_.append(x)
+                                x = threading.Thread(target=doit, args=(direccion,))# Creo un hilo barra la posición
+                                threads_.append(x) # Lo agrego al array de hilos temporales
+
+                    # Lo mismo pero para las posiciones 1 y 2
                     for pos in (1, 2):
                         for lvl in (2, 3, 4):
                             direccion = sector + "-" + string_zero(modulo) + "-0{}-{}{}".format(nivel+1, lvl, pos)
@@ -377,12 +406,16 @@ def scraper(start_dir, end_dir):
                                 x = threading.Thread(target=doit, args=(direccion,))
                                 threads_.append(x)
                             
+                # Si no, recorro las 5 posiciones
                 for pos in range(5):
+                    # Misma historia
                     direccion = sector + "-" + string_zero(modulo) + "-0{}-0{}".format(nivel+1, pos+1)
                     if direccion not in data_total:
                         x = threading.Thread(target=doit, args=(direccion,))
                         threads_.append(x)
+    # En caso de que sea RK y la direccion inicial tenga NA-9 o NI-9 (NI) 
     elif start_dir[:2] == "RK" or start_dir[:4] in ("NA-9", "NI-9"):
+        # Misma historia pero para RK
         for modulo in range(int(start_dir[9:][:3]), int(end_dir[9:][:3])+1):
             for nivel in range(1, 6):
                 for pos in range(2):    
@@ -391,10 +424,21 @@ def scraper(start_dir, end_dir):
                         x = threading.Thread(target=doit, args=(direccion,))
                         threads_.append(x)
 
+    elif start_dir[:2] == "RS":
+        for modulo in range(int(start_dir[9:][:3]), int(end_dir[9:][:3])+1):
+            for nivel in range(4):
+                direccion = sector + "-" + string_zero(modulo) + f"-0{nivel+1}-01"
+                if direccion not in data_total:
+                    x = threading.Thread(target=doit, args=(direccion,))
+                    threads_.append(x)
+
+
     if start_dir[:4] in ("NA-9","NI-9"):
         sector = "RK-0-017"
+    # Inicio todos los hilos temporales
     for x in threads_:
         x.start()
+    # Espero a que todos los hilos temporales terminen
     for x in threads_:
         x.join()
 
@@ -435,6 +479,20 @@ def buscarLugar(sec, piso, calle, *args):
                 start_dir = "NA-0-026-063-01-01"
                 end_dir = "NA-0-026-085-04-05"
                 scraper(start_dir, end_dir)
+
+            elif piso == 0 and (calle == 34 or calle == 42 or calle == 51):
+                start_dir = f"RS-0-0{calle}-002-01-01"
+                end_dir = f"RS-0-0{calle}-086-04-01"
+                scraper(start_dir, end_dir)
+
+
+            elif piso == 0 and (calle == 33 or calle == 41 or calle == 50):
+                start_dir = f"RS-0-0{calle}-001-01-01" 
+                end_dir = f"RS-0-0{calle}-085-04-01"
+                scraper(start_dir, end_dir)
+
+
+
             elif piso == 0 and calle == 27:
                 pass
             # elif piso == 0 and calle == 27:
@@ -466,7 +524,7 @@ def buscarLugar(sec, piso, calle, *args):
         
             elif piso == 0 and calle >= 28:
                 start_dir = f"RS-0-{string_zero(calle)}-001-01-01"
-                end_dir = f"RS-0-{string_zero(calle)}-086-01-01"
+                end_dir = f"RS-0-{string_zero(calle)}-086-04-01"
                 scraper(start_dir, end_dir)
             elif piso == 2 and (calle == 34 or \
                                 calle == 42):
@@ -481,16 +539,8 @@ def buscarLugar(sec, piso, calle, *args):
             else:
                 start_dir = ""
                 end_dir = ""
-                if (calle >= 1 and calle <= 3) and (piso == 3):
-                    if calle == 1:
+                if (calle >= 1 and calle <= 4) and (piso == 3):
                         start_dir = "HV-3-{}-026-01-01".format(string_zero(calle))
-                    elif calle == 2:
-                        start_dir = "HV-3-{}-002-01-01".format(string_zero(calle))
-
-                    else:
-                        start_dir = "HV-3-{}-001-01-01".format(string_zero(calle))
-                        
-
                 elif calle == 1:
                     start_dir = "{}-{}-{}-006-01-01".format(sec, piso, string_zero(calle))
                 elif calle == 2 or calle == 9 or calle == 18:
@@ -653,6 +703,7 @@ def buscarLugar(sec, piso, calle, *args):
         data["MELIS"] = MELIS
         file.write(str(data))
     MESSAGE_TL = "Ultima actualizacion: {}".format(datetime.now().strftime("%d/%m/%Y %H:%M"))
+    socketio.emit("TL-message", MESSAGE_TL)
 
 @socketio.on('pedir')
 def func(msg):
@@ -890,7 +941,7 @@ if __name__ == '__main__':
         ip = str()
         port = int()
 
-        buscador()
+        # buscador()
         # form = mainForm()
         # form.start()
         
