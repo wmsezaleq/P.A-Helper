@@ -9,9 +9,9 @@ import time
 class mainForm:
     def accept(self):
         payload = {}
-        with open("data", "r") as file:
+        with open("data/data", "r") as file:
             payload = eval(file.read())
-        with open("data", "w") as file:
+        with open("data/data", "w") as file:
             payload["ip"] = self.ip.get()
             payload["port"] = self.port.get()
             file.write(str(payload))
@@ -52,7 +52,7 @@ class mainForm:
         self.ip['font'] = myFont
         self.port['font'] = myFont
         try:
-            with open("data", "r") as file:
+            with open("data/data", "r") as file:
                 data = eval(file.read())
                 self.ip.insert(0, data['ip'])
                 self.port.insert(0, data['port'])
@@ -81,14 +81,14 @@ def buscador():
     while driver.current_url != "https://wms.mercadolibre.com.ar/":
         sleep(0.5)
 
-    with open("data", "r") as file:
+    with open("data/data", "r") as file:
         data = {}
         try:
             data = eval(file.read())
         except:
             pass
     data['cookies'] = driver.get_cookies()
-    with open("data", "w") as file:
+    with open("data/data", "w") as file:
         file.write(str(data))
     driver.close()
 
@@ -210,20 +210,20 @@ class metrica:
         while True:
             time.sleep(5)
             if not self.__checked and self.pos_inexistentes:
-                with open("pos","w") as file:
+                with open("data/pos","w") as file:
                     file.write(str(list(set(self.pos_inexistentes))))
             else:
                 self.__checked = False
     def __init__(self):
         self.pos_volumen = self.__get_volumen([60.0, 42.0, 45.0])
         self.reset()
-        with open("pos","r") as file:
+        with open("data/pos","r") as file:
             self.pos_inexistentes = eval(file.read())
         x = threading.Thread(target=self.__watchdog, daemon=True)
         x.start()
     def __del__(self):
         print("Guardando data...")
-        with open("pos","w") as file:
+        with open("data/pos","w") as file:
             file.write(str(list(set(self.pos_inexistentes))))
     def add_pos(self, pos):
         self.pos_inexistentes.append(pos)

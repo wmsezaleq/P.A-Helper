@@ -612,9 +612,9 @@ def buscarLugar(sec, piso, calle, *args):
         else:
             foo()
     data = {}
-    with open("data","r") as file:
+    with open("data/data","r") as file:
         data = eval(file.read())
-    with open("data","w") as file:
+    with open("data/data","w") as file:
         data["pos"] = Metrica.pos
         file.write(str(data))
     MESSAGE_TL = "Ultima actualizacion: {}".format(datetime.now().strftime("%d/%m/%Y %H:%M"))
@@ -850,7 +850,7 @@ if __name__ == '__main__':
         # form = mainForm()
         # form.start()
         
-        with open('data', 'r') as file:
+        with open('data/data', 'r') as file:
             data = eval(file.read())
             ip = data['ip']
             port = int(data['port'])
