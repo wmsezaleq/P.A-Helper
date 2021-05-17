@@ -20,7 +20,7 @@ class User_Manager:
 
     def __init__(self):
         try:
-            with open("user_data.dat","r") as file:
+            with open("data/user_data.dat","r") as file:
                 self.__set_jarWithCookies(eval(file.read()))
         except:
             pass
@@ -45,7 +45,7 @@ class User_Manager:
                 sleep(1)
             cookies = driver.get_cookies()
             driver.quit()
-            with open("user_data.dat", "w") as file:
+            with open("data/user_data.dat", "w") as file:
                 file.write(str(cookies))
             self.__set_jarWithCookies(cookies)
         except WebDriverException:

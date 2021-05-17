@@ -92,7 +92,7 @@ def scrapMELI(dire):
 def scraper(start_dir, end_dir):
 
     data_total = {}
-    sector = start_dir[:8]
+    sector =  "MZ" + start_dir[:8][2:] if (start_dir[:2] == "HV") else start_dir[:8]
     # Función que agrega a data_total en las direcciones, la volumetría de los MELIs que ésta posea
     def worker(row):
         try:
@@ -173,18 +173,19 @@ def scraper(start_dir, end_dir):
                     total[pos] += num
                     sector[2][pos] = num
                 sector.append(total)
-                
-            MZ = [{}]
-            MZ2 = [{}]
+            
+            if cliente_TL:
+                MZ = [{}]
+                MZ2 = [{}]
 
-            RK = [{}]
-            foo(MZ, ("MZ-0", "MZ-1", "MZ-2", "MZ-3"))
-            foo(MZ2, ("MZ2-0", "MZ2-1", "MZ2-2", "MZ2-3"))
-            foo(RK, ("RK-02","RK-03","RK-04","RK-05","RK-06"))
+                RK = [{}]
+                foo(MZ, ("MZ-0", "MZ-1", "MZ-2", "MZ-3"))
+                foo(MZ2, ("MZ2-0", "MZ2-1", "MZ2-2", "MZ2-3"))
+                foo(RK, ("RK-02","RK-03","RK-04","RK-05","RK-06"))
 
-            for waitingclient in cliente_TL:
-                socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
-                socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
+                for waitingclient in cliente_TL:
+                    socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
+                    socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
         except Exception as e:
             # print("miniworker {}: {}".format(direccion, e.args[0]))
             print("POSIBLE ERROR DE CONEXION... REINICIE EL SERVIDOR.")
@@ -359,17 +360,18 @@ def scraper(start_dir, end_dir):
                             total[pos] += num
                             sector[2][pos] = num
                         sector.append(total)
-                    MZ = [{}]
-                    MZ2 = [{}]
-                    RK = [{}]
+                    if cliente_TL:
+                        MZ = [{}]
+                        MZ2 = [{}]
+                        RK = [{}]
 
-                    foo(MZ, ("MZ-0", "MZ-1", "MZ-2", "MZ-3"))
-                    foo(MZ2, ("MZ2-0", "MZ2-1", "MZ2-2", "MZ2-3"))
-                    foo(RK,("RK-02","RK-03","RK-04","RK-05","RK-06"))
+                        foo(MZ, ("MZ-0", "MZ-1", "MZ-2", "MZ-3"))
+                        foo(MZ2, ("MZ2-0", "MZ2-1", "MZ2-2", "MZ2-3"))
+                        foo(RK,("RK-02","RK-03","RK-04","RK-05","RK-06"))
 
-                    for waitingclient in cliente_TL:
-                        socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
-                        socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
+                        for waitingclient in cliente_TL:
+                            socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
+                            socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
                 else:
                     if direccion[:8] != "RK-0-017":
                         Metrica.add_pos(direccion)
@@ -451,6 +453,8 @@ def buscarLugar(sec, piso, calle, *args):
     if sec == "MZ" and calle > 27 and piso == 0:
         sec = "RS"
     sector = "{}-{}-{}".format(sec, piso, string_zero(calle))
+    MESSAGE_TL = f"Buscando lugar en {sector}"
+    socketio.emit("TL-message",MESSAGE_TL)
     def foo():
         
         
@@ -540,7 +544,13 @@ def buscarLugar(sec, piso, calle, *args):
                 start_dir = ""
                 end_dir = ""
                 if (calle >= 1 and calle <= 4) and (piso == 3):
-                        start_dir = "HV-3-{}-026-01-01".format(string_zero(calle))
+                        start_dir = "HV-3-{}-001-01-01".format(string_zero(calle))
+                        if calle == 1:
+                            start_dir = "HV-3-{}-026-01-01".format(string_zero(calle))
+                        elif calle == 2:
+                            start_dir = "HV-3-{}-002-01-01".format(string_zero(calle))
+
+
                 elif calle == 1:
                     start_dir = "{}-{}-{}-006-01-01".format(sec, piso, string_zero(calle))
                 elif calle == 2 or calle == 9 or calle == 18:
@@ -551,8 +561,11 @@ def buscarLugar(sec, piso, calle, *args):
                 else:
                     start_dir = "{}-{}-{}-001-01-01".format(sec, piso, string_zero(calle))
 
-                if (calle >= 1 and calle <= 3) and (piso == 3):
+                if (calle >= 1 and calle <= 4) and (piso == 3):
                     end_dir = "HV-3-{}-058-04-05".format(string_zero(calle))
+                    if calle == 4:
+                        end_dir = "HV-3-{}-062-04-05".format(string_zero(calle))
+
                 elif calle > 0 and calle < 4:
                     end_dir = "{}-{}-{}-058-04-05".format(sec, piso, string_zero(calle))
                 elif (calle == 8 or calle == 17 or calle == 26) and (piso == 0 or piso == 1):
@@ -696,9 +709,9 @@ def buscarLugar(sec, piso, calle, *args):
         else:
             foo()
     data = {}
-    with open("data","r") as file:
+    with open("data/data","r") as file:
         data = eval(file.read())
-    with open("data","w") as file:
+    with open("data/data","w") as file:
         data["pos"] = Metrica.pos
         data["MELIS"] = MELIS
         file.write(str(data))
@@ -838,7 +851,7 @@ def inventario():
         socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
     threads = []
     for piso in (0, 4):
-        for calle in range(27):
+        for calle in range(52):
             buscarLugar("MZ", piso, calle+1)
 
     for calle in range(2, 16):
@@ -945,7 +958,7 @@ if __name__ == '__main__':
         # form = mainForm()
         # form.start()
         
-        with open('data', 'r') as file:
+        with open('data/data', 'r') as file:
             data = eval(file.read())
             ip = data['ip']
             port = int(data['port'])

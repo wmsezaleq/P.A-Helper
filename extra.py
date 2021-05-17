@@ -11,9 +11,9 @@ import requests
 class mainForm:
     def accept(self):
         payload = {}
-        with open("data", "r") as file:
+        with open("data/data", "r") as file:
             payload = eval(file.read())
-        with open("data", "w") as file:
+        with open("data/data", "w") as file:
             payload["ip"] = self.ip.get()
             payload["port"] = self.port.get()
             file.write(str(payload))
@@ -54,7 +54,7 @@ class mainForm:
         self.ip['font'] = myFont
         self.port['font'] = myFont
         try:
-            with open("data", "r") as file:
+            with open("data/data", "r") as file:
                 data = eval(file.read())
                 self.ip.insert(0, data['ip'])
                 self.port.insert(0, data['port'])
@@ -76,14 +76,14 @@ from time import sleep
 def buscador():
     Acc = User_Manager()
     Acc.login()
-    with open("data", "r") as file:
+    with open("data/data", "r") as file:
         data = {}
         try:
             data = eval(file.read())
         except:
             pass
     data['cookies'] = requests.utils.dict_from_cookiejar(Acc.jar)
-    with open("data", "w") as file:
+    with open("data/data", "w") as file:
         file.write(str(data))
 
 
@@ -91,7 +91,7 @@ class SpreadDoc:
     client = 0
     def __init__(self):
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name('server_credentials.json', scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name('data/server_credentials.json', scope)
 
         self.spreadsheet = gspread.authorize(creds).open('QR & ERROR POS.')
     def append_MELI(self, data):
@@ -204,7 +204,7 @@ class metrica:
         while True:
             time.sleep(5)
             if not self.__checked and self.pos_inexistentes:
-                with open("pos","w") as file:
+                with open("data/pos","w") as file:
                     file.write(str(list(set(self.pos_inexistentes))))
             else:
                 self.__checked = False
@@ -213,13 +213,13 @@ class metrica:
         self.posRS_volumen = self.__get_volumen([60.0, 42.0*5, 45.0])
 
         self.reset()
-        with open("pos","r") as file:
+        with open("data/pos","r") as file:
             self.pos_inexistentes = eval(file.read())
         x = threading.Thread(target=self.__watchdog, daemon=True)
         x.start()
     def __del__(self):
         print("Guardando data...")
-        with open("pos","w") as file:
+        with open("data/pos","w") as file:
             file.write(str(list(set(self.pos_inexistentes))))
     def add_pos(self, pos):
         self.pos_inexistentes.append(pos)
