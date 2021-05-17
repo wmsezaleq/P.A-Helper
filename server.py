@@ -31,7 +31,8 @@ cliente_TL = []
 pos_inexistente = []
 MELIS = {}
 
-
+cliente_conexion = False # Conexión del cliente proveedor de información 
+waiters = {} # Esperadores diccionario con las urls
 jar = requests.cookies.RequestsCookieJar()
 
 
@@ -41,6 +42,31 @@ import os
 os.environ["GEVENT_SUPPORT"] = 'True'
 total_tiempo = 0
 MESSAGE_TL = ""
+
+# Función para obtener el request desde el cliente o desde el server mismo
+def getRq(url, jar):
+    if not cliente_conexion:
+        return requests.get(url, cookies=jar).text
+    else:
+        socketio.emit('Client-Request', url)
+        waiters[url] = [True, []]
+        while waiters[url][0]:
+            time.sleep(1)
+        data = waiters[url][1]
+        del waiters[url]
+        return data
+        
+
+@socketio.on("Server-M")
+def client_msg(msg):
+    global cliente_conexion
+    print(msg)
+    cliente_conexion = bool(msg)
+@socketio.on('Server-Data')
+def client_data(msg): # 0 url 1 data
+    url = msg[0]
+    waiters[url][1] = msg[1]
+    waiters[url][0] = False        
 
 def contador(sector):
     for i in range(10 * 60):
@@ -66,7 +92,7 @@ def scrapMELI(dire):
     if dire in MELIS:
         return MELIS[dire]
     try:
-        req_text = requests.get("https://wms.mercadolibre.com.ar/api/reports/skus/export/INVENTORIES?inventory_id={}&fields=inventory_id%2Cwidth_value%2Clength_value%2Cheight_value".format(dire), cookies=jar).text
+        req_text = getRq(f"https://wms.mercadolibre.com.ar/api/reports/skus/export/INVENTORIES?inventory_id={dire}&fields=inventory_id%2Cwidth_value%2Clength_value%2Cheight_value", jar)
         file_data = StringIO(req_text)
         data = csv.reader(file_data, delimiter=',')
         volumen = 0
@@ -120,7 +146,7 @@ def scraper(start_dir, end_dir):
                 data_total[row[0]] = [1, 0]
     print("Buscando desde {} ---> {}".format(start_dir, end_dir))
     # Obtengo un StringIO del csv exportado por la API de MELI
-    file_data = StringIO(requests.get("https://wms.mercadolibre.com.ar/api/reports/address/export/SKUS/{}/{}?fields=address_id%2Cinventory_id%2Ctotal".format(start_dir, end_dir), cookies=jar).text)
+    file_data = StringIO(getRq(f"https://wms.mercadolibre.com.ar/api/reports/address/export/SKUS/{start_dir}/{end_dir}?fields=address_id%2Cinventory_id%2Ctotal", jar))
     # Lo leo con csv reader y lo convierto en un array
     totalidad = list(csv.reader(file_data, delimiter=','))
     old_pos = ""
@@ -308,7 +334,7 @@ def scraper(start_dir, end_dir):
         elif (direccion[:2] == "RK" and (direccion in Metrica.pos_inexistentes)):
             totalidad = []
         else:
-            file_data = StringIO(requests.get("https://wms.mercadolibre.com.ar/api/reports/address/export/SKUS/{}/{}?fields=address_id".format(direccion, direccion), cookies=jar).text)
+            file_data = StringIO(getRq(f"https://wms.mercadolibre.com.ar/api/reports/address/export/SKUS/{direccion}/{direccion}?fields=address_id", jar))
             totalidad = csv.reader(file_data, delimiter=',')
         for row in totalidad:
             try:
@@ -619,7 +645,7 @@ def buscarLugar(sec, piso, calle, *args):
                     x.start()
                     hilos[sector] = x
                 SI_DATA = {}
-                data_text = StringIO(requests.get(f"https://wms.mercadolibre.com.ar/api/download/stage-in", cookies=jar).text)
+                data_text = StringIO(getRq(f"https://wms.mercadolibre.com.ar/api/download/stage-in", jar))
                 data = list(csv.reader(data_text, delimiter=','))
                 del data[0]
                 for arr in data:
@@ -939,6 +965,8 @@ def query():
                 print("ERROR DE COMANDO, ESCRIBA HELP PARA VER LOS COMANDOS DISPONIBLES")
         except Exception as e:
             print("ERROR EN HILO QUERY: {}".format(e.args[0]))
+
+
 
 
 if __name__ == '__main__':
