@@ -5,7 +5,7 @@ with open("data/data", "r") as file:
 
 keys = list(x["pos"].keys())
 for key in keys:
-    if key[:8] == "MZ-3-004":
+    if key[:8] == "MZ-3-005":
         del x["pos"][key]
 
 

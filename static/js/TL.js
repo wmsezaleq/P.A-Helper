@@ -3,6 +3,7 @@ var MZ = [];
 var RK = [];
 var MZ2 = [];
 var SI = [];
+var all_modulos = [];
 var rainbow = new Rainbow();
 function update_all(sec)
 {
@@ -370,7 +371,19 @@ $(function(){
         $("#RK-6 td").eq(1).text(disp);
         $("#RK-6 td").eq(2).text(ocup);            
         $("#RK-6 td").eq(3).text(porcentaje.toFixed(2)).css('background-color', get_color(porcentaje));
+        
 
+        // Añadiendo la información al 
+        for (key in all_pos)
+        {
+            let sector = key.substring(0, 12);
+            let d = all_pos[key];
+            // Si el sector no existe dentro del diccionario de los modulos
+            if (all_modulos[sector] == undefined)
+                all_modulos[sector] = {key : [d[0], d[1]] };
+            else
+                all_modulos[sector][key] = [d[0], d[1]];
+            }
 
     });
     $("#update_level").click(function()
@@ -405,13 +418,20 @@ $(function(){
         $("#message").text(msg);
     });
     
-    socketio.on("TL-update", function(msg){
-        all_pos[msg[0]] = [msg[1], msg[2]];
+    socketio.on("|-update", function(msg){
+        let direccion = msg[0];
+        all_pos[direccion] = [msg[1], msg[2]];
+        
+        let piso_modulo = direccion.substring(0, 12)
+        if (all_modulos[piso_modulo] == undefined)
+            all_modulos[piso_modulo] = {direccion: [msg[1], msg[2]]};
+        else
+            all_modulos[piso_modulo][direccion] = [msg[1], msg[2]];
         MZ = msg[3];
         RK = msg[4];
         MZ2 = msg[5];
         // Si el sector-piso concuerda con el sector + piso seleccionado... (MZ)
-        if (msg[0].substring(0, 4) == "MZ-" + $("#floor_select").children("option:selected").val())
+        if (direccion.substring(0, 4) == "MZ-" + $("#floor_select").children("option:selected").val())
         {
             var contador = 0;
             var total = 1;
@@ -430,21 +450,18 @@ $(function(){
             
             if (tipo < 2)
             {
-                for (key in all_pos)
+
+                // Recorro las keys (posiciones) del diccionario de modulos en el modulo de la dirección recibida
+                for (key in all_modulos[piso_modulo])
                 {
-                    // Si el modulo es igual al modulo de la dirección recibida...
-                    if (key.substring(9, 12) == msg[0].substring(9, 12))
-                    {
-                        // Si el tipo de mapa es de VOLUMEN
-                        if (type)
-                            // Se suma el total en el 0 (volumen)
-                            total += all_pos[key][0];
-                        else // Sino
-                            // Se suma el total en el 1 (cant. meli)
-                            
-                            total += all_pos[key][1]
-                        contador++;
-                    }
+                    // Si el tipo de mapa es de VOLUMEN
+                    if (type)
+                        // Se suma el total en el 0 (volumen)
+                        total += all_modulos[piso_modulo][key][0];
+                    else // Sino
+                        // Se suma el total en el 1 (cant. meli)
+                        total += all_modulos[piso_modulo][key][1];
+                    contador++;
                 }
                 color = rainbow.colourAt(total/contador);
                 var calle = parseInt(key.substring(5, 8));
@@ -475,11 +492,11 @@ $(function(){
 
         }
         // Si la direccion recibida donde el sector- + nivel concuerda con RK-0 + nivel seleccionado....
-        else if (msg[0].substring(0, 3) + msg[0].substring(13, 15) == "RK-0" + $("#nivel").children("option:selected").val())
+        else if (direccion.substring(0, 3) + direccion.substring(13, 15) == "RK-0" + $("#nivel").children("option:selected").val())
         {
-            var calle = parseInt(msg[0].substring(5, 8));
-            var modulo = parseInt(msg[0].substring(9, 12));
-            var posicion = parseInt(msg[0].substring(16, 18));
+            var calle = parseInt(direccion.substring(5, 8));
+            var modulo = parseInt(direccion.substring(9, 12));
+            var posicion = parseInt(direccion.substring(16, 18));
             rainbow.setNumberRange(0, 1);   
             rainbow.setSpectrum("#71FF09", "#FF3C00");
 

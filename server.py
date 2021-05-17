@@ -184,7 +184,6 @@ def scraper(start_dir, end_dir):
                 foo(RK, ("RK-02","RK-03","RK-04","RK-05","RK-06"))
 
                 for waitingclient in cliente_TL:
-                    socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
                     socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
         except Exception as e:
             # print("miniworker {}: {}".format(direccion, e.args[0]))
@@ -370,7 +369,6 @@ def scraper(start_dir, end_dir):
                         foo(RK,("RK-02","RK-03","RK-04","RK-05","RK-06"))
 
                         for waitingclient in cliente_TL:
-                            socketio.emit("TL-message", MESSAGE_TL, room=waitingclient)
                             socketio.emit('TL-update', [direccion, d[0], d[1], MZ, RK, MZ2], room=waitingclient)
                 else:
                     if direccion[:8] != "RK-0-017":
@@ -807,7 +805,6 @@ def TL_data(text):
         foo(RK, ("RK-02","RK-03","RK-04","RK-05","RK-06"))
         cliente_TL.append(cliente)
         socketio.emit('TL-data',[Metrica.pos, MZ, RK, MZ2], room=cliente)
-        socketio.emit('TL-message', MESSAGE_TL, room=cliente)
         buscarLugar("SI", 0, 0, cliente)
     threading.Thread(target=t, daemon=True, args=(request.sid,)).start()
 
@@ -861,11 +858,6 @@ def inventario():
     for waitingclient in cliente_TL:
         socketio.emit('TL-message', MESSAGE_TL, room=waitingclient)
     time.sleep(60 * 60)
-
-
-    
-
-
 
 def reportes():
     while True:
