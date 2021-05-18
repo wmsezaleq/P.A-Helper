@@ -22,10 +22,9 @@ class client:
 
     @sio.on('Client-Request')
     def get_data(url):
-        r = requests.get(url, user.jar).text
-        print(f"Enviando info de url: {url}...")
+        r = requests.get(url, cookies=user.jar).text
         sio.emit('Server-Data', [url, r])
 
 if __name__ == "__main__":
-    c1 = client("192.168.1.10", 80)
+    c1 = client("181.47.52.5", 8080)
     

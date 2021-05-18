@@ -56,5 +56,4 @@ class User_Manager:
             messagebox.showerror("ERROR", message=traceback_formatexc())
 if __name__ == "__main__":
     AccountManager = User_Manager()
-    t = AccountManager.get_username()
-    print(t)
+    AccountManager.login()
