@@ -48,8 +48,8 @@ def getRq(url, jar):
     if not cliente_conexion:
         return requests.get(url, cookies=jar).text
     else:
-        socketio.emit('Client-Request', url)
         waiters[url] = [True, []]
+        socketio.emit('Client-Request', url)
         while waiters[url][0]:
             time.sleep(1)
         data = waiters[url][1]
@@ -974,10 +974,10 @@ if __name__ == '__main__':
         ip = str()
         port = int()
 
-        # buscador()
+        buscador()
         # form = mainForm()
         # form.start()
-        
+        print("Cargando información... Por favor espere.")
         with open('data/data', 'r') as file:
             data = eval(file.read())
             ip = data['ip']
