@@ -620,14 +620,8 @@ def buscarLugar(sec, piso, calle, *args):
 
         elif sec == "RK":
             start_dir = "RK-0-{}-001-02-01".format(string_zero(calle))
-            if calle == 17:
-                start_dir = "NA-9-017-001-03-01"
-                end_dir = "NA-9-017-104-04-02"
-                scraper(start_dir, end_dir)
-                start_dir = "NI-9-017-001-01-01"
-                end_dir = "NI-9-017-104-01-02"
-                scraper(start_dir, end_dir)
-
+            if calle >= 3 and calle <= 5:
+                end_dir = "RK-0-{}-104-05-02".format(string_zero(calle))
             elif calle == 2:
                 end_dir = "RK-0-{}-104-04-02".format(string_zero(calle))
             else:
@@ -974,7 +968,7 @@ if __name__ == '__main__':
         ip = str()
         port = int()
 
-        buscador()
+        # buscador()
         # form = mainForm()
         # form.start()
         print("Cargando información... Por favor espere.")
